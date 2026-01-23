@@ -35,12 +35,18 @@ Backend для медицинского приложения, разрабаты
 - [ ] `POST /auth/signin`
 - [ ] `POST /auth/refresh`
 - [ ] `GET /auth/me`
+- [x] `GET /auth/confirm?email=email@mail.ru&token=token` - Подтверждение почты 
 
 ### 2. Users Service
 
-- [ ] `GET /users/:id`
+TODO: 
+- [ ] Добавить GUARD на проверку подтвержденного аккаунта
+- [ ] Добавить GUARD на проверку доступности к эндпоинту
+
+- [x] `GET /users/:id` - Получить пользователя 
+- [x] `POST /users` - Создать пользователя
+- [x] `POST /users/:id/profile` - Создать профиль пользователя
 - [ ] `PATCH /users/:id`
-- [ ] `GET /users/:id/profile`
 - [ ] `POST /users/:id/upload-documents`
 - [ ] `GET /users/:id/documents`
 
