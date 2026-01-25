@@ -23,6 +23,6 @@ export class EmailService {
       subject: "Подтверждение почты",
       html: `<b>Ваша ссылка для подтверждения почты \n${url}</b>`,
     })
-    return process.env.IS_DEV && nodemailerEmail
+    return nodemailerEmail
   }
 }
