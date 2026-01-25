@@ -1,11 +1,16 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
-import { Clinic, Doctor, Patient, Prisma, ROLE, User } from "@prisma/client"
-import { hash } from "bcryptjs"
+import { Auth, Clinic, Doctor, Patient, Prisma, ROLE, User } from "@prisma/client"
+import { compare, genSalt, hash } from "bcryptjs"
 
 import { PrismaService } from "../prisma/prisma.service"
 import { CreateUserDto } from "./dto/create-user.dto"
 import { CreateProfileDto } from "./dto/create-profile.dto"
 import { EmailService } from "src/email/email.service"
+import { UpdateUserDto } from "./dto/update-user.dto"
+import { LoginDto } from "src/auth/dto/login.dto"
+import { UserWithRelations } from "src/common/types/user.types"
+import { FindUsersQueryDto } from "./dto/find-users-query.dto"
+import { ROLE_CONST } from "src/common/constants/user.constants"
 
 @Injectable()
 export class UserService {
@@ -14,124 +19,143 @@ export class UserService {
     private smtp: EmailService,
   ) {}
 
-  async findUser(userWhereUniqueInput: Prisma.UserWhereUniqueInput): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({
-      where: userWhereUniqueInput,
-    })
-    if (!user) throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
-
-    const include = {
-      auth: {
-        select: {
-          emailConfirmedAt: true,
-          lastSignInAt: true,
-          confirmed: true,
-        },
-      },
-    } as Prisma.UserInclude
-
-    switch (user.role) {
-      case "PATIENT":
-        include.patient = true
-        break
-      case "DOCTOR":
-        include.doctor = true
-        include.moderation = true
-        break
-      case "CLINIC":
-        include.clinic = true
-        include.moderation = true
-        break
+  async findOne(where: Prisma.UserWhereUniqueInput): Promise<UserWithRelations | null> {
+    const user = await this.prisma.user.findUnique({ where })
+    if (!user) {
+      throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
     }
-
-    return await this.prisma.user.findUnique({
-      where: userWhereUniqueInput,
-      include,
+    return this.prisma.user.findUnique({
+      where,
+      include: {
+        auth: { omit: { password: true } },
+        patient: user?.role === ROLE.PATIENT,
+        doctor: user?.role === ROLE.DOCTOR,
+        clinic: user?.role === ROLE.CLINIC,
+        moderation: user?.role === ROLE.DOCTOR || user?.role === ROLE.CLINIC,
+      },
     })
   }
 
-  async findUsers(params: {
-    skip?: number
-    take?: number
-    cursor?: Prisma.UserWhereUniqueInput
-    where?: Prisma.UserWhereInput
-    orderBy?: Prisma.UserOrderByWithRelationInput
-  }): Promise<User[]> {
-    const { skip, take, cursor, where, orderBy } = params
-    return this.prisma.user.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
+  async findByLogin({ email, password }: LoginDto): Promise<Auth> {
+    const auth = await this.prisma.auth.findUnique({ where: { email } })
+    if (!auth || !auth?.password) {
+      throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
+    }
+    const comparePassword = await compare(password, auth.password)
+    if (!comparePassword) {
+      throw new HttpException("Неправильные данные", HttpStatus.UNAUTHORIZED)
+    }
+    await this.prisma.auth.update({
+      where: { userId: auth.userId },
+      data: { lastSignInAt: new Date() },
     })
+    return auth
+  }
+
+  async findByPayload({ email }: { email: string }): Promise<UserWithRelations | null> {
+    return await this.findOne({ email })
+  }
+
+  async findUsers(
+    queryDto: FindUsersQueryDto,
+  ): Promise<{ data: User[]; total: number; page: number; limit: number }> {
+    const { skip = 0, take = 20, role, search, orderBy = "createdAt", sortBy = "desc" } = queryDto
+    const where: Prisma.UserWhereInput = {}
+
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: "insensitive" } },
+        { fullName: { contains: search, mode: "insensitive" } },
+      ]
+    }
+    if (role) {
+      where.role = role
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        skip,
+        take,
+        where,
+        orderBy: { [orderBy]: sortBy },
+        include: { patient: role === "PATIENT" },
+      }),
+
+      this.prisma.user.count({ where }),
+    ])
+
+    return {
+      data,
+      total,
+      page: Math.floor(skip / take) + 1,
+      limit: take,
+    }
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
-    try {
-      const hashedPassword = await hash(createUserDto.password, 10)
-      const confirmationToken = `${crypto.randomUUID()}-${new Date().getTime()}`
-      const confirmationTokenExpiresAt = new Date(
-        new Date().getTime() +
-          Number(process.env.CONFIRMATION_EMAIL_TOKEN_EXPIRES_AT) * 60 * 60 * 1000,
-      )
+    const { fullName, password, email, phone, role } = createUserDto
+    const userInDb = await this.prisma.user.findUnique({ where: { email: createUserDto.email } })
+    if (userInDb) {
+      throw new HttpException("Такой пользователь уже создан", HttpStatus.BAD_REQUEST)
+    }
+    const salt = await genSalt(10)
+    const hashedPassword = await hash(password, salt)
 
-      const user = await this.prisma.user.create({
-        data: {
-          role: createUserDto.role as ROLE,
-          fullName: createUserDto.fullName,
-          email: createUserDto.email,
-          phone: createUserDto.phone,
-          auth: {
-            create: {
-              password: hashedPassword,
-              email: createUserDto.email,
-              phone: createUserDto.phone,
-              confirmationToken: confirmationToken,
-              confirmationTokenExpiresAt: confirmationTokenExpiresAt,
-              confirmationSentAt: new Date(),
-            },
+    const confirmationToken = `${crypto.randomUUID()}-${new Date().getTime()}`
+    const confirmationTokenExpiresAt = new Date(
+      new Date().getTime() +
+        Number(process.env.CONFIRMATION_EMAIL_TOKEN_EXPIRES_AT) * 60 * 60 * 1000,
+    )
+
+    const user = await this.prisma.user.create({
+      data: {
+        role: role as ROLE,
+        fullName: fullName,
+        email: email,
+        phone: phone,
+        auth: {
+          create: {
+            password: hashedPassword,
+            email: email,
+            phone: phone,
+            confirmationToken: confirmationToken,
+            confirmationTokenExpiresAt: confirmationTokenExpiresAt,
+            confirmationSentAt: new Date(),
           },
         },
-      })
-      await this.smtp.sendConfirmationEmail(user.email, confirmationToken)
-      return user
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === "P2002") {
-          throw new HttpException("Такой пользователь уже создан", HttpStatus.CONFLICT)
-        }
-      }
-      throw error
-    }
+      },
+    })
+
+    await this.smtp.sendConfirmationEmail(user.email, confirmationToken)
+    return user
   }
 
   async createProfile(
-    userId: string,
+    id: string,
     createProfileDto: CreateProfileDto,
   ): Promise<Patient | Doctor | Clinic> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    })
+    const user = await this.findOne({ id })
     if (!user) throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
+
+    if (user[ROLE_CONST[user.role]]) {
+      throw new HttpException(`Профиль ${user.role} уже создан`, HttpStatus.CONFLICT)
+    }
 
     if (user.role === ROLE.PATIENT) {
       // if (!createProfileDto.patient) {
       //   throw new HttpException("Данные пациента не предоставлены", HttpStatus.BAD_REQUEST)
       // }
-      const { birthDate, ...data } = createProfileDto.patient || {}
+      const { birthdate, ...data } = createProfileDto.patient || {}
 
       return await this.prisma.patient.create({
         data: {
           user: {
             connect: {
-              id: userId,
+              id,
             },
           },
           ...data,
-          birthDate: birthDate ? new Date(birthDate).toDateString() : undefined,
+          birthdate: birthdate ? new Date(birthdate).toDateString() : undefined,
         },
       })
     }
@@ -141,17 +165,17 @@ export class UserService {
         throw new HttpException("Данные доктора не предоставлены", HttpStatus.BAD_REQUEST)
       }
 
-      const { documents, birthDate, ...doctorData } = createProfileDto.doctor
+      const { documents, birthdate, ...doctorData } = createProfileDto.doctor
 
       return await this.prisma.doctor.create({
         data: {
           user: {
             connect: {
-              id: userId,
+              id,
             },
           },
           ...doctorData,
-          birthDate: birthDate ? new Date(birthDate).toDateString() : undefined,
+          birthdate: birthdate ? new Date(birthdate).toDateString() : undefined,
           documents: {
             create: documents || [],
           },
@@ -170,7 +194,7 @@ export class UserService {
         data: {
           user: {
             connect: {
-              id: userId,
+              id,
             },
           },
           documents: { create: documents },
@@ -182,22 +206,41 @@ export class UserService {
     throw new HttpException("Недопустимая роль", HttpStatus.BAD_REQUEST)
   }
 
-  // TODO: Протестировать
-  async updateUser(params: {
-    where: Prisma.UserWhereUniqueInput
-    data: Prisma.UserUpdateInput
-  }): Promise<User> {
-    const { where, data } = params
+  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne({ id })
+    if (!user) throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
+
+    if (Object.keys(updateUserDto).length === 0) {
+      throw new HttpException(`Данные не предоставлены`, HttpStatus.BAD_REQUEST)
+    }
+
     return await this.prisma.user.update({
-      data,
-      where,
+      where: { id: user.id },
+      data: {
+        fullName: updateUserDto.fullName,
+        email: updateUserDto.email,
+        phone: updateUserDto.phone,
+        patient: {
+          update: { data: updateUserDto[user.role] as Prisma.PatientUpdateWithoutUserInput },
+        },
+        doctor: {
+          update: { data: updateUserDto[user.role] as Prisma.DoctorUpdateWithoutUserInput },
+        },
+        clinic: {
+          update: { data: updateUserDto[user.role] as Prisma.ClinicUpdateWithoutUserInput },
+        },
+      },
+      include: {
+        patient: user.role === ROLE.PATIENT,
+        doctor: user.role === ROLE.DOCTOR,
+        clinic: user.role === ROLE.CLINIC,
+      },
     })
   }
 
-  // TODO: Протестировать
-  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
+  async deleteUser(id: string): Promise<User> {
     return this.prisma.user.delete({
-      where,
+      where: { id },
     })
   }
 }
