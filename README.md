@@ -1,5 +1,15 @@
 # Novome Backend - NestJS REST API
 
+---
+
+TODO:
+
+- [x] Добавить проверку подтвержденной почты, чтобы войти
+- [x] Добавить GUARD на проверку доступности к эндпоинту
+- [ ] Добавить model Role {id,userId,user,role}
+
+---
+
 ## 📋 Описание проекта
 
 Backend для медицинского приложения, разрабатываемый на NestJS.
@@ -31,23 +41,22 @@ Backend для медицинского приложения, разрабаты
 
 ### 1. Auth Service
 
-- [ ] `POST /auth/signup`
-- [ ] `POST /auth/signin`
+- [x] `GET /auth/confirm?email=email@mail.ru&token=token` - Подтверждение почты
+- [x] `POST /auth/login` - Вход пользователя
+- [x] `POST /auth/register` - Регистрация пользователя
 - [ ] `POST /auth/refresh`
-- [ ] `GET /auth/me`
-- [x] `GET /auth/confirm?email=email@mail.ru&token=token` - Подтверждение почты 
+- [ ] `POST /auth/change-password`
 
 ### 2. Users Service
-```
-TODO: 
-- [ ] Добавить GUARD на проверку подтвержденного аккаунта
-- [ ] Добавить GUARD на проверку доступности к эндпоинту
-```
-- [x] `GET /users/:id` - Получить пользователя 
+
+- [x] `GET /users/me` - Получение собственного профиля
+- [x] `GET /users` - Получить пользователей (опц. с фильтрацией)
+- [x] `GET /users/:id` - Получить пользователя
 - [x] `POST /users` - Создать пользователя
 - [x] `POST /users/:id/profile` - Создать профиль пользователя
-- [ ] `PATCH /users/:id`
-- [ ] `POST /users/:id/upload-documents`
+- [x] `PATCH /users/:id` - Обновление пользователя (опц. с профилем)
+- [x] `DELETE /users/:id - Удаление пользователя`
+- [ ] `POST /users/:id/documents`
 - [ ] `GET /users/:id/documents`
 
 ### 3. Schedules Service
