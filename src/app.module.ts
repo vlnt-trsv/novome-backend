@@ -11,6 +11,7 @@ import { EmailModule } from "./email/email.module"
   providers: [EmailService],
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: ".env",
     }),
     PrismaModule,
