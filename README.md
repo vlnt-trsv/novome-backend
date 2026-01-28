@@ -45,7 +45,7 @@ Backend для медицинского приложения, разрабаты
 - [x] `POST /auth/login` - Вход пользователя
 - [x] `POST /auth/register` - Регистрация пользователя
 - [x] `POST /auth/refresh` - Обновление токена
-- [ ] `POST /auth/change-password`
+- [ ] `POST /auth/reset-password`
 - [x] `POST /auth/logout` - Выход пользователя
 
 ### 2. Users Service
@@ -54,6 +54,7 @@ Backend для медицинского приложения, разрабаты
 - [x] `GET /users` - Получить пользователей (опц. с фильтрацией)
 - [x] `GET /users/:id` - Получить пользователя
 - [x] `POST /users` - Создать пользователя
+- [x] `POST /user/change-password` - Изменение пароля
 - [x] `POST /users/:id/profile` - Создать профиль пользователя
 - [x] `PATCH /users/:id` - Обновление пользователя (опц. с профилем)
 - [x] `DELETE /users/:id - Удаление пользователя`
