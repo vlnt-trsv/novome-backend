@@ -18,6 +18,7 @@ import { UpdateUserDto } from "./dto/update-user.dto"
 import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { FindUsersQueryDto } from "./dto/find-users-query.dto"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
+import { ChangePasswordDto } from "./dto/change-password.dto"
 
 @Controller("users")
 @UseGuards(JwtAuthGuard)
@@ -52,6 +53,11 @@ export class UserController {
     @Body() createProfileDto: CreateProfileDto,
   ): Promise<Patient | Doctor | Clinic> {
     return await this.userService.createProfile(id, createProfileDto)
+  }
+
+  @Patch("change-password")
+  async changePassword(@CurrentUser() user: User, @Body() changePasswordDto: ChangePasswordDto) {
+    return await this.userService.changePassword(user.id, changePasswordDto)
   }
 
   @Patch(":id")
