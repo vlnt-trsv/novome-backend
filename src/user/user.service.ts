@@ -27,7 +27,7 @@ export class UserService {
     return this.prisma.user.findUnique({
       where,
       include: {
-        auth: { omit: { password: true } },
+        auth: { omit: { hashedPassword: true, hashedRt: true } },
         patient: user?.role === ROLE.PATIENT,
         doctor: user?.role === ROLE.DOCTOR,
         clinic: user?.role === ROLE.CLINIC,
@@ -38,10 +38,10 @@ export class UserService {
 
   async findByLogin({ email, password }: LoginDto): Promise<Auth> {
     const auth = await this.prisma.auth.findUnique({ where: { email } })
-    if (!auth || !auth?.password) {
+    if (!auth || !auth?.hashedPassword) {
       throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
     }
-    const comparePassword = await compare(password, auth.password)
+    const comparePassword = await compare(password, auth.hashedPassword)
     if (!comparePassword) {
       throw new HttpException("Неправильные данные", HttpStatus.UNAUTHORIZED)
     }
@@ -115,7 +115,7 @@ export class UserService {
         phone: phone,
         auth: {
           create: {
-            password: hashedPassword,
+            hashedPassword: hashedPassword,
             email: email,
             phone: phone,
             confirmationToken: confirmationToken,
@@ -155,7 +155,7 @@ export class UserService {
             },
           },
           ...data,
-          birthdate: birthdate ? new Date(birthdate).toDateString() : undefined,
+          birthdate: birthdate ? new Date(birthdate) : undefined,
         },
       })
     }
@@ -165,7 +165,7 @@ export class UserService {
         throw new HttpException("Данные доктора не предоставлены", HttpStatus.BAD_REQUEST)
       }
 
-      const { documents, birthdate, ...doctorData } = createProfileDto.doctor
+      const { documents, birthdate, ...data } = createProfileDto.doctor
 
       return await this.prisma.doctor.create({
         data: {
@@ -174,11 +174,9 @@ export class UserService {
               id,
             },
           },
-          ...doctorData,
-          birthdate: birthdate ? new Date(birthdate).toDateString() : undefined,
-          documents: {
-            create: documents || [],
-          },
+          ...data,
+          birthdate: birthdate ? new Date(birthdate) : undefined,
+          documents: { create: documents },
         },
       })
     }
@@ -197,8 +195,8 @@ export class UserService {
               id,
             },
           },
-          documents: { create: documents },
           ...data,
+          documents: { create: documents },
         },
       })
     }

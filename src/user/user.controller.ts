@@ -15,12 +15,12 @@ import { Clinic, Doctor, Patient, User } from "@prisma/client"
 import { CreateUserDto } from "./dto/create-user.dto"
 import { CreateProfileDto } from "./dto/create-profile.dto"
 import { UpdateUserDto } from "./dto/update-user.dto"
-import { AuthGuard } from "@nestjs/passport"
 import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { FindUsersQueryDto } from "./dto/find-users-query.dto"
+import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 
 @Controller("users")
-@UseGuards(AuthGuard("jwt"))
+@UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
