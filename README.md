@@ -44,8 +44,9 @@ Backend для медицинского приложения, разрабаты
 - [x] `GET /auth/confirm?email=email@mail.ru&token=token` - Подтверждение почты
 - [x] `POST /auth/login` - Вход пользователя
 - [x] `POST /auth/register` - Регистрация пользователя
-- [ ] `POST /auth/refresh`
+- [x] `POST /auth/refresh` - Обновление токена
 - [ ] `POST /auth/change-password`
+- [x] `POST /auth/logout` - Выход пользователя
 
 ### 2. Users Service
 
