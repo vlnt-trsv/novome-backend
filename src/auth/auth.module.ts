@@ -5,9 +5,11 @@ import { PassportModule } from "@nestjs/passport"
 import { JwtStrategy } from "./strategies/jwt.strategy"
 import { JwtModule } from "@nestjs/jwt"
 import { UserModule } from "../user/user.module"
+import { EmailModule } from "src/email/email.module"
 
 @Module({
   imports: [
+    EmailModule,
     UserModule,
     PassportModule,
     PassportModule.register({

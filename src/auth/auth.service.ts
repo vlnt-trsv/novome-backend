@@ -8,6 +8,9 @@ import { JwtPayload } from "src/common/types/jwt-payload.interface"
 import { CreateUserDto } from "src/user/dto/create-user.dto"
 import { compare, genSalt, hash } from "bcryptjs"
 import { ConfigService } from "@nestjs/config"
+import { ResetPasswordDto } from "./dto/reset-password.dto"
+import { EmailService } from "src/email/email.service"
+import { ForgotPasswordDto } from "./dto/forgot-password.dto"
 
 @Injectable()
 export class AuthService {
@@ -16,17 +19,18 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   async confirmEmail(email: string, token: string): Promise<HttpException> {
-    const user = await this.userService.findOne({ email })
-    if (!user || !user.auth) {
+    const auth = await this.prisma.auth.findUnique({ where: { email } })
+    if (!auth) {
       throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
     }
-    if (user.auth.confirmationToken !== token) {
+    if (auth.confirmationToken !== token) {
       throw new HttpException("Токен не совпадает", HttpStatus.BAD_REQUEST)
     }
-    if (user.auth.confirmationTokenExpiresAt && new Date() > user.auth.confirmationTokenExpiresAt) {
+    if (auth.confirmationTokenExpiresAt && new Date() > auth.confirmationTokenExpiresAt) {
       throw new HttpException("Срок действия токена истек", HttpStatus.BAD_REQUEST)
     }
 
@@ -95,6 +99,62 @@ export class AuthService {
     await this._updateRefreshTokenHash(auth.userId, tokens.refreshToken)
 
     return { email: auth.email, tokens }
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<HttpException> {
+    const auth = await this.prisma.auth.findUnique({ where: { email: forgotPasswordDto.email } })
+    if (!auth)
+      throw new HttpException(
+        "Если такой пользователь существует, мы отправим письмо",
+        HttpStatus.ACCEPTED,
+      )
+
+    const recoveryToken = `${crypto.randomUUID()}-${new Date().getTime()}`
+    const recoveryTokenExpiresAt = new Date(
+      new Date().getTime() +
+        Number(process.env.CONFIRMATION_EMAIL_TOKEN_EXPIRES_AT) * 60 * 60 * 1000,
+    )
+
+    await this.emailService.sendRecoveryEmail(forgotPasswordDto.email, recoveryToken)
+    await this.prisma.auth.update({
+      where: { email: forgotPasswordDto.email },
+      data: {
+        recoveryToken,
+        recoveryTokenExpiresAt,
+        recoverySentAt: new Date(),
+      },
+    })
+    throw new HttpException(
+      "Если такой пользователь существует, мы отправим письмо",
+      HttpStatus.ACCEPTED,
+    )
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<HttpException> {
+    const auth = await this.prisma.auth.findUnique({ where: { email: resetPasswordDto.email } })
+    if (!auth) throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
+
+    if (auth.recoveryToken !== resetPasswordDto.token)
+      throw new HttpException("Токен не совпадает", HttpStatus.BAD_REQUEST)
+
+    if (auth.recoveryTokenExpiresAt && new Date() > auth.recoveryTokenExpiresAt)
+      throw new HttpException("Срок действия токена истек", HttpStatus.BAD_REQUEST)
+
+    const salt = await genSalt(10)
+    const hashedPassword = await hash(resetPasswordDto.newPassword, salt)
+
+    await this.prisma.auth.update({
+      where: { email: resetPasswordDto.email },
+      data: {
+        hashedPassword,
+        recoveryToken: null,
+        recoveryTokenExpiresAt: null,
+        recoverySentAt: null,
+        lastChangePasswordAt: new Date(),
+      },
+    })
+
+    throw new HttpException("Пароль успешно изменен", HttpStatus.OK)
   }
 
   private async _updateRefreshTokenHash(userId: string, refreshToken: string) {
