@@ -20,6 +20,8 @@ import { Request, Response } from "express"
 import { JwtService } from "@nestjs/jwt"
 import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { User } from "@prisma/client"
+import { ResetPasswordDto } from "./dto/reset-password.dto"
+import { ForgotPasswordDto } from "./dto/forgot-password.dto"
 
 @Controller("auth")
 export class AuthController {
@@ -88,5 +90,15 @@ export class AuthController {
       maxAge: 1 * 24 * 60 * 60 * 1000,
     })
     return { accessToken: result.tokens.accessToken }
+  }
+
+  @Post("forgot-password")
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto): Promise<HttpException> {
+    return await this.authService.forgotPassword(forgotPasswordDto)
+  }
+
+  @Post("reset-password")
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return await this.authService.resetPassword(resetPasswordDto)
   }
 }

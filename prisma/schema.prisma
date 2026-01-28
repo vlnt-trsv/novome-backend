@@ -10,7 +10,6 @@ datasource db {
 model Auth {
   userId                     String    @unique @db.Uuid
   user                       User      @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  hashedPassword             String
   email                      String    @unique
   emailConfirmedAt           DateTime?
   confirmationSentAt         DateTime?
@@ -19,6 +18,11 @@ model Auth {
   lastSignInAt               DateTime?
   confirmed                  Boolean   @default(false)
   phone                      String?
+  hashedPassword             String
+  lastChangePasswordAt       DateTime?
+  recoverySentAt             DateTime?
+  recoveryToken              String?
+  recoveryTokenExpiresAt     DateTime?
   hashedRt                   String?
 
   @@map("auth")

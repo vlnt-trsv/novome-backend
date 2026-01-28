@@ -17,7 +17,7 @@ import { ChangePasswordDto } from "./dto/change-password.dto"
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private smtp: EmailService,
+    private emailService: EmailService,
   ) {}
 
   async findOne(where: Prisma.UserWhereUniqueInput): Promise<UserWithRelations | null> {
@@ -127,7 +127,7 @@ export class UserService {
       },
     })
 
-    await this.smtp.sendConfirmationEmail(user.email, confirmationToken)
+    await this.emailService.sendConfirmationEmail(user.email, confirmationToken)
     return user
   }
 
@@ -259,7 +259,7 @@ export class UserService {
 
     await this.prisma.auth.update({
       where: { userId },
-      data: { hashedPassword: newPasswordHashed },
+      data: { hashedPassword: newPasswordHashed, lastChangePasswordAt: new Date() },
     })
 
     throw new HttpException("Пароль успешно изменен", HttpStatus.OK)
