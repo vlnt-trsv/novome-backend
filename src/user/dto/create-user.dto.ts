@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { ROLE } from "@prisma/client"
-import { IsEmail, IsEnum, IsNotEmpty } from "class-validator"
+import { IsEmail, IsEnum, IsNotEmpty, MinLength } from "class-validator"
+import { PASSWORD_MIN_LENGTH } from "src/common/constants/auth.constants"
 
 export class CreateUserDto {
   @ApiProperty({ example: "patient", description: "Роль пользователя" })
@@ -21,5 +22,6 @@ export class CreateUserDto {
 
   @ApiProperty({ example: "123abc", description: "Пароль пользователя (no hash)" })
   @IsNotEmpty()
+  @MinLength(PASSWORD_MIN_LENGTH, { message: "Пароль слишком короткий" })
   readonly password: string
 }

@@ -11,6 +11,7 @@ import { LoginDto } from "src/auth/dto/login.dto"
 import { UserWithRelations } from "src/common/types/user.types"
 import { FindUsersQueryDto } from "./dto/find-users-query.dto"
 import { ROLE_CONST } from "src/common/constants/user.constants"
+import { ChangePasswordDto } from "./dto/change-password.dto"
 
 @Injectable()
 export class UserService {
@@ -240,5 +241,27 @@ export class UserService {
     return this.prisma.user.delete({
       where: { id },
     })
+  }
+
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<HttpException> {
+    const { oldPassword, newPassword } = changePasswordDto
+
+    const auth = await this.prisma.auth.findUnique({ where: { userId } })
+    const isPasswordMatch = await compare(oldPassword, auth?.hashedPassword as string)
+
+    if (!isPasswordMatch) throw new HttpException("Неверный текущий пароль", HttpStatus.BAD_REQUEST)
+
+    const salt = await genSalt(10)
+    const newPasswordHashed = await hash(newPassword, salt)
+
+    await this.prisma.auth.update({
+      where: { userId },
+      data: { hashedPassword: newPasswordHashed },
+    })
+
+    throw new HttpException("Пароль успешно изменен", HttpStatus.OK)
   }
 }
