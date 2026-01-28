@@ -6,7 +6,6 @@ TODO:
 
 - [x] Добавить проверку подтвержденной почты, чтобы войти
 - [x] Добавить GUARD на проверку доступности к эндпоинту
-- [ ] Добавить model Role {id,userId,user,role}
 
 ---
 
@@ -45,7 +44,8 @@ Backend для медицинского приложения, разрабаты
 - [x] `POST /auth/login` - Вход пользователя
 - [x] `POST /auth/register` - Регистрация пользователя
 - [x] `POST /auth/refresh` - Обновление токена
-- [ ] `POST /auth/reset-password`
+- [x] `POST /auth/forgot-password` - Забыл пароль (Восстановление доступа)
+- [x] `POST /auth/reset-password` - Изменение пароля
 - [x] `POST /auth/logout` - Выход пользователя
 
 ### 2. Users Service
