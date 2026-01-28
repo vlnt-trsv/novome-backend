@@ -7,7 +7,7 @@ export class LoginDto {
   @IsNotEmpty()
   readonly email: string
 
-  @ApiProperty({ example: "123abc", description: "Пароль пользователя (no hash)" })
+  @ApiProperty({ example: "123abc", description: "Пароль пользователя" })
   @IsNotEmpty()
   readonly password: string
 }
