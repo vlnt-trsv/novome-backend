@@ -9,3 +9,10 @@ export type UserWithRelations = Prisma.UserGetPayload<{
     moderation: true
   }
 }>
+
+export type StaffWithRelations = Prisma.StaffGetPayload<{
+  include: {
+    auth: { omit: { hashedPassword: true; hashedRt: true } }
+    moderated: true
+  }
+}>
