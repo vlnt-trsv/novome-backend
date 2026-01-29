@@ -5,10 +5,11 @@ import { PrismaModule } from "./prisma/prisma.module"
 import { UserModule } from "./user/user.module"
 import { EmailService } from "./email/email.service"
 import { EmailModule } from "./email/email.module"
+import { StaffService } from "./staff/staff.service"
+import { StaffModule } from "./staff/staff.module"
 
 @Module({
-  controllers: [],
-  providers: [EmailService],
+  providers: [EmailService, StaffService],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
@@ -18,6 +19,7 @@ import { EmailModule } from "./email/email.module"
     AuthModule,
     UserModule,
     EmailModule,
+    StaffModule,
   ],
 })
 export class AppModule {}
