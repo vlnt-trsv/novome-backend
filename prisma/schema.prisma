@@ -4,12 +4,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["public", "auth"]
+  schemas  = ["public", "auth", "moderation"]
 }
 
 model Auth {
-  userId                     String    @unique @db.Uuid
-  user                       User      @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id                         String    @id @default(uuid()) @db.Uuid
+  type                       AUTH_TYPE @default(USER)
   email                      String    @unique
   emailConfirmedAt           DateTime?
   confirmationSentAt         DateTime?
@@ -24,9 +24,22 @@ model Auth {
   recoveryToken              String?
   recoveryTokenExpiresAt     DateTime?
   hashedRt                   String?
+  user                       User?     @relation("UserAuth")
+  staff                      Staff?    @relation("StaffAuth")
 
-  @@map("auth")
+  @@map("auths")
   @@schema("auth")
+}
+
+model Staff {
+  id        String       @id @default(uuid()) @db.Uuid
+  email     String       @unique
+  fullName  String
+  moderated Moderation[]
+  auth      Auth         @relation("StaffAuth", fields: [id], references: [id], onDelete: Cascade)
+
+  @@map("staffs")
+  @@schema("moderation")
 }
 
 model User {
@@ -35,8 +48,6 @@ model User {
   doctor     Doctor?
   clinic     Clinic?
   moderation Moderation?
-  auth       Auth?
-  // 
   role       ROLE
   fullName   String
   email      String      @unique
@@ -44,6 +55,7 @@ model User {
   aiToken    Int         @default(10)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+  auth       Auth        @relation("UserAuth", fields: [id], references: [id], onDelete: Cascade)
 
   @@map("users")
   @@schema("public")
@@ -111,16 +123,32 @@ model Clinic {
 }
 
 model Moderation {
-  id          String            @id @default(uuid()) @db.Uuid
-  userId      String            @unique @db.Uuid
-  user        User              @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @unique @db.Uuid
+  user        User        @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  moderatorId String?     @db.Uuid
+  moderator   Staff?      @relation(fields: [moderatorId], references: [id])
   // 
-  status      MODERATION_STATUS @default(PENDING)
+  status      USER_STATUS @default(PENDING)
   comment     String?
-  moderatedAt DateTime          @default(now())
+  tickets     Ticket[]
+  moderatedAt DateTime    @default(now())
 
   @@map("moderations")
-  @@schema("public")
+  @@schema("moderation")
+}
+
+model Ticket {
+  id           String        @id @default(uuid()) @db.Uuid
+  subject      String
+  description  String
+  status       TICKET_STATUS @default(OPEN)
+  createdAt    DateTime      @default(now())
+  moderationId String?       @db.Uuid
+  moderation   Moderation?   @relation(fields: [moderationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("tickets")
+  @@schema("moderation")
 }
 
 model Document {
@@ -173,6 +201,13 @@ model PatientFavoriteClinic {
   @@schema("public")
 }
 
+enum AUTH_TYPE {
+  USER
+  STAFF
+
+  @@schema("auth")
+}
+
 enum ROLE {
   PATIENT
   DOCTOR
@@ -181,12 +216,22 @@ enum ROLE {
   @@schema("public")
 }
 
-enum MODERATION_STATUS {
+enum USER_STATUS {
   PENDING
   APPROVED
   REJECTED
+  BANNED
 
-  @@schema("public")
+  @@schema("moderation")
+}
+
+enum TICKET_STATUS {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+
+  @@schema("moderation")
 }
 
 enum GENDER {
