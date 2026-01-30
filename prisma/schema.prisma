@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["public", "auth", "moderation"]
+  schemas  = ["public", "auth", "moderation", "file"]
 }
 
 model Auth {
@@ -152,23 +152,34 @@ model Ticket {
 }
 
 model Document {
-  id            String        @id @default(uuid()) @db.Uuid
-  patientUserId String?       @db.Uuid
-  doctorUserId  String?       @db.Uuid
-  clinicUserId  String?       @db.Uuid
-  patient       Patient?      @relation(fields: [patientUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
-  doctor        Doctor?       @relation(fields: [doctorUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
-  clinic        Clinic?       @relation(fields: [clinicUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
+  id            String   @id @default(uuid()) @db.Uuid
+  patientUserId String?  @db.Uuid
+  doctorUserId  String?  @db.Uuid
+  clinicUserId  String?  @db.Uuid
+  fileId        String   @unique @db.Uuid
+  patient       Patient? @relation(fields: [patientUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
+  doctor        Doctor?  @relation(fields: [doctorUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
+  clinic        Clinic?  @relation(fields: [clinicUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
+  file          File     @relation(fields: [fileId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   // 
-  type          DOCUMENT_TYPE
-  url           String
-  mimeType      String?
-  size          Int?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("documents")
   @@schema("public")
+}
+
+model File {
+  id           String    @id @default(uuid()) @db.Uuid
+  originalName String
+  s3Key        String    @unique
+  url          String
+  documents    Document?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("files")
+  @@schema("file")
 }
 
 model PatientFavoriteDoctor {
@@ -241,15 +252,15 @@ enum GENDER {
   @@schema("public")
 }
 
-enum DOCUMENT_TYPE {
-  LICENSE
-  DIPLOMA
-  CERTIFICATE
-  PASSPORT
-  OTHER
+// enum DOCUMENT_TYPE {
+//   LICENSE
+//   DIPLOMA
+//   CERTIFICATE
+//   PASSPORT
+//   OTHER
 
-  @@schema("public")
-}
+//   @@schema("public")
+// }
 
 enum SPECIALIZATION {
   // Эстетическая хирургия лица
