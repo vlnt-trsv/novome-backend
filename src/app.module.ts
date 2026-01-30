@@ -7,6 +7,7 @@ import { EmailService } from "./email/email.service"
 import { EmailModule } from "./email/email.module"
 import { StaffService } from "./staff/staff.service"
 import { StaffModule } from "./staff/staff.module"
+import { FilesModule } from "./files/files.module"
 
 @Module({
   providers: [EmailService, StaffService],
@@ -20,6 +21,7 @@ import { StaffModule } from "./staff/staff.module"
     UserModule,
     EmailModule,
     StaffModule,
+    FilesModule,
   ],
 })
 export class AppModule {}
