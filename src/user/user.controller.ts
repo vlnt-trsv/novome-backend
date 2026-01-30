@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  SetMetadata,
+  UseGuards,
+} from "@nestjs/common"
 import { UserService } from "./user.service"
 import { Clinic, Doctor, Patient, User } from "@prisma/client"
 import { CreateUserDto } from "./dto/create-user.dto"
@@ -12,6 +23,7 @@ import { AccessGuard } from "src/auth/guards/access.guard"
 
 @Controller("users")
 @UseGuards(JwtAuthGuard)
+@SetMetadata("type", ["user"])
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
