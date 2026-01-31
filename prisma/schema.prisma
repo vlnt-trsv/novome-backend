@@ -36,7 +36,7 @@ model Staff {
   email     String       @unique
   fullName  String
   moderated Moderation[]
-  auth      Auth         @relation("StaffAuth", fields: [id], references: [id], onDelete: Cascade)
+  auth      Auth         @relation("StaffAuth", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@map("staffs")
   @@schema("moderation")
@@ -44,27 +44,27 @@ model Staff {
 
 model User {
   id         String      @id @default(uuid()) @db.Uuid
-  patient    Patient?
-  doctor     Doctor?
-  clinic     Clinic?
+  patient    Patient?    @relation("Patient")
+  doctor     Doctor?     @relation("Doctor")
+  clinic     Clinic?     @relation("Clinic")
   moderation Moderation?
   role       ROLE
   fullName   String
+  avatar     String?
   email      String      @unique
   phone      String?
   aiToken    Int         @default(10)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
-  auth       Auth        @relation("UserAuth", fields: [id], references: [id], onDelete: Cascade)
+  auth       Auth        @relation("UserAuth", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@map("users")
   @@schema("public")
 }
 
 model Patient {
-  userId                 String                  @unique @db.Uuid
-  user                   User                    @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  //
+  id                     String                  @unique @db.Uuid
+  user                   User                    @relation("Patient", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
   birthdate              DateTime?
   gender                 GENDER?
   documents              Document[]
@@ -78,19 +78,18 @@ model Patient {
 }
 
 model Doctor {
-  userId             String                  @unique @db.Uuid
+  id                 String                  @unique @db.Uuid
   clinicId           String?                 @db.Uuid
-  user               User                    @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  clinic             Clinic?                 @relation(fields: [clinicId], references: [userId])
-  // 
+  user               User                    @relation("Doctor", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  clinic             Clinic?                 @relation(fields: [clinicId], references: [id])
   gender             GENDER?
   birthdate          DateTime?
-  licenseNumber      String
+  licenseNumber      String                  @unique
   specialization     SPECIALIZATION
   experience         Int
   education          String
   workplace          String?
-  inn                String
+  inn                String                  @unique
   documents          Document[]
   favoriteByPatients PatientFavoriteDoctor[]
   createdAt          DateTime                @default(now())
@@ -101,8 +100,8 @@ model Doctor {
 }
 
 model Clinic {
-  userId             String                  @unique @db.Uuid
-  user               User                    @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id                 String                  @unique @db.Uuid
+  user               User                    @relation("Clinic", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
   // 
   legalName          String
   legalAddress       String
@@ -110,7 +109,7 @@ model Clinic {
   clinicLicense      String
   directorName       String
   directorPosition   String
-  inn                String
+  inn                String                  @unique
   orgn               String
   documents          Document[]
   doctors            Doctor[]
@@ -152,18 +151,17 @@ model Ticket {
 }
 
 model Document {
-  id            String   @id @default(uuid()) @db.Uuid
-  patientUserId String?  @db.Uuid
-  doctorUserId  String?  @db.Uuid
-  clinicUserId  String?  @db.Uuid
-  fileId        String   @unique @db.Uuid
-  patient       Patient? @relation(fields: [patientUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
-  doctor        Doctor?  @relation(fields: [doctorUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
-  clinic        Clinic?  @relation(fields: [clinicUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
-  file          File     @relation(fields: [fileId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  // 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id        String   @unique @db.Uuid
+  // type      DOCUMENT_TYPE
+  patientId String?  @db.Uuid
+  doctorId  String?  @db.Uuid
+  clinicId  String?  @db.Uuid
+  patient   Patient? @relation(fields: [patientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  doctor    Doctor?  @relation(fields: [doctorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  clinic    Clinic?  @relation(fields: [clinicId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  file      File     @relation("Documents", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("documents")
   @@schema("public")
@@ -172,42 +170,43 @@ model Document {
 model File {
   id           String    @id @default(uuid()) @db.Uuid
   originalName String
+  mimeType     String
+  size         Int
   s3Key        String    @unique
   url          String
-  documents    Document?
+  documents    Document? @relation("Documents")
   createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
 
   @@map("files")
   @@schema("file")
 }
 
 model PatientFavoriteDoctor {
-  id            String   @id @default(uuid()) @db.Uuid
-  patientUserId String   @db.Uuid
-  doctorUserId  String   @db.Uuid
-  patient       Patient  @relation(fields: [patientUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
-  doctor        Doctor   @relation(fields: [doctorUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
-  addedAt       DateTime @default(now())
+  id       String   @id @default(uuid()) @db.Uuid
+  userId   String   @db.Uuid
+  doctorId String   @db.Uuid
+  patient  Patient  @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  doctor   Doctor   @relation(fields: [doctorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  addedAt  DateTime @default(now())
 
-  @@unique([patientUserId, doctorUserId])
-  @@index([patientUserId])
-  @@index([doctorUserId])
+  @@unique([userId, doctorId])
+  @@index([userId])
+  @@index([doctorId])
   @@map("patient_favorite_doctors")
   @@schema("public")
 }
 
 model PatientFavoriteClinic {
-  id            String   @id @default(uuid()) @db.Uuid
-  patientUserId String   @db.Uuid
-  clinicUserId  String   @db.Uuid
-  patient       Patient  @relation(fields: [patientUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
-  clinic        Clinic   @relation(fields: [clinicUserId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
-  addedAt       DateTime @default(now())
+  id       String   @id @default(uuid()) @db.Uuid
+  userId   String   @db.Uuid
+  clinicId String   @db.Uuid
+  patient  Patient  @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  clinic   Clinic   @relation(fields: [clinicId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  addedAt  DateTime @default(now())
 
-  @@unique([patientUserId, clinicUserId])
-  @@index([patientUserId])
-  @@index([clinicUserId])
+  @@unique([userId, clinicId])
+  @@index([userId])
+  @@index([clinicId])
   @@map("patient_favorite_clinics")
   @@schema("public")
 }
