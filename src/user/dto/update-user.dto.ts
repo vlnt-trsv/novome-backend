@@ -1,9 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsOptional, ValidateNested } from "class-validator"
-import { DoctorDto } from "./doctor.dto"
 import { Type } from "class-transformer"
-import { ClinicDto } from "./clinic.dto"
-import { PatientDto } from "./patient.dto"
+import { ClinicDto } from "src/profile/dto/clinic.dto"
+import { PatientDto } from "src/profile/dto/patient.dto"
+import { DoctorDto } from "src/profile/dto/doctor.dto"
 
 export class UpdateUserDto {
   @ApiProperty({ example: "Петр Петров Петрович", description: "ФИО пользователя" })

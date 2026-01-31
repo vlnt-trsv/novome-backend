@@ -11,9 +11,8 @@ import {
   UseGuards,
 } from "@nestjs/common"
 import { UserService } from "./user.service"
-import { Clinic, Doctor, Patient, User } from "@prisma/client"
+import { User } from "@prisma/client"
 import { CreateUserDto } from "./dto/create-user.dto"
-import { CreateProfileDto } from "./dto/create-profile.dto"
 import { UpdateUserDto } from "./dto/update-user.dto"
 import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { FindUsersQueryDto } from "./dto/find-users-query.dto"
@@ -28,8 +27,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get("me")
-  getMe(@CurrentUser() user: User) {
-    return { ...user }
+  async getMe(@CurrentUser() user: User) {
+    return await this.userService.findOne({ id: user.id })
   }
 
   @Get()
@@ -49,15 +48,6 @@ export class UserController {
   @Post("user")
   async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
     return await this.userService.createUser(createUserDto)
-  }
-
-  @Post(":id/profile")
-  @UseGuards(AccessGuard)
-  async createProfile(
-    @Param("id") id: string,
-    @Body() createProfileDto: CreateProfileDto,
-  ): Promise<Patient | Doctor | Clinic> {
-    return await this.userService.createProfile(id, createProfileDto)
   }
 
   @Patch("change-password")

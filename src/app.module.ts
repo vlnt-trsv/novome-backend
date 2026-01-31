@@ -8,6 +8,8 @@ import { EmailModule } from "./email/email.module"
 import { StaffService } from "./staff/staff.service"
 import { StaffModule } from "./staff/staff.module"
 import { FilesModule } from "./files/files.module"
+import { S3Module } from "./s3/s3.module"
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   providers: [EmailService, StaffService],
@@ -22,6 +24,8 @@ import { FilesModule } from "./files/files.module"
     EmailModule,
     StaffModule,
     FilesModule,
+    S3Module,
+    ProfileModule,
   ],
 })
 export class AppModule {}

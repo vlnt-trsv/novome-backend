@@ -1,15 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
-import { Clinic, Doctor, Patient, Prisma, ROLE, User, USER_STATUS } from "@prisma/client"
+import { Prisma, ROLE, User, USER_STATUS } from "@prisma/client"
 import { compare, genSalt, hash } from "bcryptjs"
 
 import { PrismaService } from "../prisma/prisma.service"
 import { CreateUserDto } from "./dto/create-user.dto"
-import { CreateProfileDto } from "./dto/create-profile.dto"
 import { EmailService } from "src/email/email.service"
 import { UpdateUserDto } from "./dto/update-user.dto"
 import { UserWithRelations } from "src/common/types/user.types"
 import { FindUsersQueryDto } from "./dto/find-users-query.dto"
-import { ROLE_CONST } from "src/common/constants/user.constants"
 import { ChangePasswordDto } from "./dto/change-password.dto"
 
 @Injectable()
@@ -113,83 +111,6 @@ export class UserService {
 
     await this.emailService.sendConfirmationEmail(newUser.email, confirmationToken)
     return newUser
-  }
-
-  async createProfile(
-    id: string,
-    createProfileDto: CreateProfileDto,
-  ): Promise<Patient | Doctor | Clinic> {
-    const user = await this.findOne({ id })
-    if (!user) throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
-
-    if (user[ROLE_CONST[user.role]]) {
-      throw new HttpException(`Профиль ${user.role} уже создан`, HttpStatus.CONFLICT)
-    }
-
-    if (!user.auth?.confirmed)
-      throw new HttpException("Подтвердите почту, перед созданием профиля", HttpStatus.BAD_REQUEST)
-
-    if (user.role === ROLE.PATIENT) {
-      // if (!createProfileDto.patient) {
-      //   throw new HttpException("Данные пациента не предоставлены", HttpStatus.BAD_REQUEST)
-      // }
-      const { birthdate, ...data } = createProfileDto.patient || {}
-
-      return await this.prisma.patient.create({
-        data: {
-          user: {
-            connect: {
-              id,
-            },
-          },
-          ...data,
-          birthdate: birthdate ? new Date(birthdate) : undefined,
-        },
-      })
-    }
-
-    if (user.role === ROLE.DOCTOR) {
-      if (!createProfileDto.doctor) {
-        throw new HttpException("Данные доктора не предоставлены", HttpStatus.BAD_REQUEST)
-      }
-
-      const { documents, birthdate, ...data } = createProfileDto.doctor
-
-      return await this.prisma.doctor.create({
-        data: {
-          user: {
-            connect: {
-              id,
-            },
-          },
-          ...data,
-          birthdate: birthdate ? new Date(birthdate) : undefined,
-          documents: { create: documents },
-        },
-      })
-    }
-
-    if (user.role === ROLE.CLINIC) {
-      if (!createProfileDto.clinic) {
-        throw new HttpException("Данные клиники не предоставлены", HttpStatus.BAD_REQUEST)
-      }
-
-      const { documents, ...data } = createProfileDto.clinic
-
-      return await this.prisma.clinic.create({
-        data: {
-          user: {
-            connect: {
-              id,
-            },
-          },
-          ...data,
-          documents: { create: documents },
-        },
-      })
-    }
-
-    throw new HttpException("Недопустимая роль", HttpStatus.BAD_REQUEST)
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {

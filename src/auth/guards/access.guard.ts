@@ -23,8 +23,14 @@ export class AccessGuard implements CanActivate {
       where: { userId },
     })
 
-    if (moderation?.status !== "APPROVED")
-      throw new ForbiddenException("Ваш аккаунт ожидает подтверждения модератором")
+    switch (moderation?.status) {
+      case "PENDING":
+        throw new ForbiddenException("Ваш аккаунт ожидает подтверждения модератором")
+      case "REJECTED":
+        throw new ForbiddenException("Ваш аккаунт отклонен модератором")
+      case "BANNED":
+        throw new ForbiddenException("Ваш аккаунт забанен модератором")
+    }
 
     return true
   }
