@@ -18,7 +18,12 @@ async function start() {
   const app = await NestFactory.create(AppModule)
 
   app.setGlobalPrefix(PREFIX)
-  app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  )
   app.enableCors(cors)
   app.use(cookieParser())
 
