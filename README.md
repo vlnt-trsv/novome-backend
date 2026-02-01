@@ -98,6 +98,15 @@ Backend для медицинского приложения, разрабаты
 - [ ] `GET /catalog/clinics`
 - [ ] `GET /catalog/clinics/:id`
 
+### Rating Service - Сервис рейтинга
+
+- [ ] `GET /ratings/doctors`
+- [ ] `GET /ratings/clinics`
+- [ ] `GET /ratings/doctors/:id`
+- [ ] `GET /ratings/clinics/:id`
+- [ ] `POST /ratings/doctors/:id`
+- [ ] `POST /ratings/clinics/:id`
+
 ### Notifications Service - Сервис уведомлений 
 
 - [ ] `GET /notifications`
