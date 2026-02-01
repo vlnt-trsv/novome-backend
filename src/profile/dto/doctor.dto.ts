@@ -28,7 +28,7 @@ export class DoctorDto {
 
   @ApiProperty({ example: "12345", description: "Номер лицензии" })
   @IsString()
-  licenseNumber: string
+  license: string
 
   @ApiProperty({ example: "RHINOPLASTY", description: "Специализация", enum: SPECIALIZATION })
   @IsEnum(SPECIALIZATION)

@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import { FilesService } from "src/files/files.service"
 import { CreateProfileDto } from "./dto/create-profile.dto"
@@ -35,10 +32,10 @@ export class ProfileService {
     const profileData = createProfileDto[roleKey]
     const isProfileCreated = await this.prisma.user.findMany({
       where: { id: user.id },
-      select: { [roleKey]: true },
+      select: { [roleKey]: { include: { _count: true } } },
     })
 
-    if (isProfileCreated) {
+    if (isProfileCreated[0][roleKey] !== null) {
       throw new HttpException(`Профиль ${roleKey} уже создан`, HttpStatus.CONFLICT)
     }
 
@@ -135,7 +132,7 @@ export class ProfileService {
             await tx.document.create({
               data: {
                 id: dbFile.id,
-                doctorId: profile.id,
+                clinicId: profile.id,
               },
             })
           }

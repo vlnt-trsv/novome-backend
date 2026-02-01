@@ -16,7 +16,7 @@ export class ClinicDto {
 
   @ApiProperty({ example: "12345", description: "Лицензия клиники" })
   @IsString()
-  clinicLicense: string
+  license: string
 
   @ApiProperty({ example: "Иванов Иван Иванович", description: "ФИО директора" })
   @IsString()
@@ -29,12 +29,11 @@ export class ClinicDto {
   @ApiProperty({ example: "1234567890", description: "ИНН" })
   @IsString()
   @Length(10, 12)
-  @Matches(/^\d{13}$/, { message: "ИНН должен содержать только цифры" })
   inn: string
 
   @ApiProperty({ example: "1234567890123", description: "ОГРН (13 цифр)" })
   @IsString()
   @Length(13, 13)
   @Matches(/^\d{13}$/, { message: "ОГРН должен содержать только цифры" })
-  orgn: string
+  ogrn: string
 }
