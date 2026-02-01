@@ -11,7 +11,7 @@ export class FilesService {
   ) {}
 
   async uploadAvatar(file: Express.Multer.File, user: User) {
-    const fileKey = `${user.id}/avatar/${Date.now()}-${file.originalname}`
+    const fileKey = `${user.id}/avatar/${user.id}-avatar`
     const s3Data = await this.s3.upload(file, fileKey)
 
     try {

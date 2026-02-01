@@ -4,8 +4,9 @@ import { FilesService } from "./files.service"
 import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { User } from "@prisma/client"
+import { AvatarValidationPipe } from "./pipe/avatar-validation.pipe"
 
-@Controller("files/:userId")
+@Controller("files")
 @UseGuards(JwtAuthGuard)
 export class FilesController {
   constructor(private filesServies: FilesService) {}
@@ -19,9 +20,12 @@ export class FilesController {
   //     return await this.filesServies.processFiles(files, user)
   //   }
 
-  @Post("upload-avatar")
+  @Post("avatar")
   @UseInterceptors(FileInterceptor("avatar"))
-  async uploadAvatar(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: User) {
-    return await this.filesServies.uploadAvatar(file, user)
+  async uploadAvatar(
+    @UploadedFile(AvatarValidationPipe) avatar: Express.Multer.File,
+    @CurrentUser() user: User,
+  ) {
+    return await this.filesServies.uploadAvatar(avatar, user)
   }
 }
