@@ -59,7 +59,7 @@ export class UserController {
   @Patch("me")
   @UseGuards(AccessGuard)
   async updateUser(@CurrentUser() user: User, @Body() updateUserDto: UpdateUserDto): Promise<User> {
-    return await this.userService.updateUser(user.id, { ...updateUserDto })
+    return await this.userService.updateUser(user.id, updateUserDto)
   }
 
   @Delete(":id")

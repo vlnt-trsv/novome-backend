@@ -9,6 +9,7 @@ import { UpdateUserDto } from "./dto/update-user.dto"
 import { UserWithRelations } from "src/common/types/user.types"
 import { FindUsersQueryDto } from "./dto/find-users-query.dto"
 import { ChangePasswordDto } from "./dto/change-password.dto"
+import { ROLE_CONST } from "src/common/constants/user.constants"
 
 @Injectable()
 export class UserService {
@@ -117,26 +118,30 @@ export class UserService {
     const user = await this.findOne({ id })
     if (!user) throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
 
-    if (Object.keys(updateUserDto).length === 0) {
+    const roleKey = ROLE_CONST[user.role]
+    const roleData = updateUserDto[roleKey]
+
+    if (!Object.entries(updateUserDto).some(([, value]) => value)) {
       throw new HttpException(`Данные не предоставлены`, HttpStatus.BAD_REQUEST)
+    }
+
+    const updatePayload: Prisma.UserUpdateInput = {
+      fullName: updateUserDto.fullName,
+      email: updateUserDto.email,
+      phone: updateUserDto.phone,
+    }
+
+    if (roleData) {
+      updatePayload[roleKey] = {
+        update: {
+          data: roleData,
+        },
+      }
     }
 
     return await this.prisma.user.update({
       where: { id: user.id },
-      data: {
-        fullName: updateUserDto.fullName,
-        email: updateUserDto.email,
-        phone: updateUserDto.phone,
-        patient: {
-          update: { data: updateUserDto[user.role] as Prisma.PatientUpdateWithoutUserInput },
-        },
-        doctor: {
-          update: { data: updateUserDto[user.role] as Prisma.DoctorUpdateWithoutUserInput },
-        },
-        clinic: {
-          update: { data: updateUserDto[user.role] as Prisma.ClinicUpdateWithoutUserInput },
-        },
-      },
+      data: updatePayload,
       include: {
         patient: user.role === ROLE.PATIENT,
         doctor: user.role === ROLE.DOCTOR,
