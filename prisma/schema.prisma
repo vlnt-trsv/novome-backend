@@ -84,7 +84,7 @@ model Doctor {
   clinic             Clinic?                 @relation(fields: [clinicId], references: [id])
   gender             GENDER?
   birthdate          DateTime?
-  licenseNumber      String                  @unique
+  license            String                  @unique
   specialization     SPECIALIZATION
   experience         Int
   education          String
@@ -106,11 +106,11 @@ model Clinic {
   legalName          String
   legalAddress       String
   actualAddress      String
-  clinicLicense      String
+  license            String
   directorName       String
   directorPosition   String
   inn                String                  @unique
-  orgn               String
+  ogrn               String
   documents          Document[]
   doctors            Doctor[]
   favoriteByPatients PatientFavoriteClinic[]
