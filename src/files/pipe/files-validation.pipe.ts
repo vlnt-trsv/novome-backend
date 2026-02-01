@@ -22,8 +22,10 @@ export class FilesValidationPipe implements PipeTransform {
     const allowedTypes = this.configService.get<string>("FILE_TYPE") || ""
     const typeRegex = new RegExp(allowedTypes)
 
-    if (!files || files.length === 0)
+    if (!files || files.length === 0) {
+      console.log(files)
       throw new HttpException("Файлы не найдены", HttpStatus.NOT_FOUND)
+    }
 
     for (const file of files) {
       if (file.size > maxSize)
