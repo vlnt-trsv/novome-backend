@@ -6,7 +6,6 @@ import {
   HttpException,
   HttpStatus,
 } from "@nestjs/common"
-import { AUTH_TYPE } from "@prisma/client"
 import { Request } from "express"
 import { PrismaService } from "src/prisma/prisma.service"
 
@@ -15,11 +14,8 @@ export class AccessGuard implements CanActivate {
   constructor(private prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context
-      .switchToHttp()
-      .getRequest<Request & { user: { id: string; type: AUTH_TYPE } }>()
+    const request = context.switchToHttp().getRequest<Request & { user: { id: string } }>()
     const userId = request.user.id
-    const type = request.user.type
 
     if (!userId) throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
 
@@ -27,14 +23,13 @@ export class AccessGuard implements CanActivate {
       where: { userId },
     })
 
-    if (type === "USER") {
-      if (moderation?.status !== "APPROVED") {
+    switch (moderation?.status) {
+      case "PENDING":
         throw new ForbiddenException("Ваш аккаунт ожидает подтверждения модератором")
-      }
-
-      if (request.path.includes("staff")) {
-        throw new ForbiddenException("Доступ к разделу /staff запрещен")
-      }
+      case "REJECTED":
+        throw new ForbiddenException("Ваш аккаунт отклонен модератором")
+      case "BANNED":
+        throw new ForbiddenException("Ваш аккаунт забанен модератором")
     }
 
     return true

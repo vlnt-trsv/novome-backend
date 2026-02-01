@@ -1,13 +1,15 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common"
 import { StaffService } from "./staff.service"
-import { Moderation, Staff, Ticket, USER_STATUS } from "@prisma/client"
+import { AUTH_TYPE, Moderation, Staff, Ticket, USER_STATUS } from "@prisma/client"
 import { CurrentStaff } from "src/common/decorators/current-staff.decorator"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { CreateStaffDto } from "./dto/create-staff.dto"
-import { AccessGuard } from "src/auth/guards/access.guard"
+import { TypeGuard } from "src/auth/guards/type.guard"
+import { Type } from "src/auth/decorators/type.decorator"
 
 @Controller("staffs")
-@UseGuards(JwtAuthGuard, AccessGuard)
+@Type(AUTH_TYPE.STAFF)
+@UseGuards(JwtAuthGuard, TypeGuard)
 export class StaffController {
   constructor(private readonly staffService: StaffService) {}
 

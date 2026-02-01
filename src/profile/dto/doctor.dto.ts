@@ -1,16 +1,14 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Document, GENDER, SPECIALIZATION } from "@prisma/client"
+import { GENDER, SPECIALIZATION } from "@prisma/client"
+import { Type } from "class-transformer"
 import {
   IsDateString,
   IsEnum,
-  IsNumber,
   IsInt,
   IsOptional,
   IsString,
-  Min,
-  Matches,
   Length,
-  IsArray,
+  MinLength,
 } from "class-validator"
 
 export class DoctorDto {
@@ -29,41 +27,33 @@ export class DoctorDto {
   gender?: GENDER
 
   @ApiProperty({ example: "12345", description: "Номер лицензии" })
-  @IsOptional()
   @IsString()
-  licenseNumber: string
+  license: string
 
   @ApiProperty({ example: "RHINOPLASTY", description: "Специализация", enum: SPECIALIZATION })
-  @IsOptional()
   @IsEnum(SPECIALIZATION)
   specialization: SPECIALIZATION
 
   @ApiProperty({ example: 5, description: "Опыт работы (лет)" })
-  @IsOptional()
   @IsInt()
-  @IsNumber()
-  @Min(0)
+  @Type(() => Number)
+  // @MinLength(0)
   experience: number
 
   @ApiProperty({ example: "МГУ, медицинский факультет", description: "Образование" })
-  @IsOptional()
   @IsString()
   education: string
 
-  @ApiProperty({ example: "Клиника №1", description: "Место работы", required: false })
-  @IsOptional()
+  @ApiProperty({
+    example: "Клиника №1 или Частная практика",
+    description: "Место работы",
+    required: false,
+  })
   @IsString()
   workplace?: string
 
   @ApiProperty({ example: "1234567890", description: "ИНН" })
-  @IsOptional()
   @IsString()
   @Length(10, 12)
-  @Matches(/^\d{13}$/, { message: "ОГРН должен содержать только цифры" })
   inn: string
-
-  @ApiProperty({ description: "Документы", type: [Object] })
-  @IsArray()
-  @IsOptional()
-  documents: Document[]
 }

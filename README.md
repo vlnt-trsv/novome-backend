@@ -5,7 +5,9 @@
 TODO:
 
 - [x] Добавить проверку подтвержденной почты, чтобы войти
-- [x] Добавить GUARD на проверку доступности к эндпоинту
+- [x] Добавить ACCESS GUARD на проверку доступности (подтверждёна ли почта)
+- [x] Добавить TYPE DECORATOR для размещения типа в класс
+- [x] Добавить TYPE GUARD на проверку типа (USER, STAFF)
 - [ ] Поддержка: Если у пользователя проблема с созданием профиля, он создает Ticket (например, модальное окно после входа, на странице ожидания ответа модерации). Тикет падает в Moderation.tickets.
 
 ---
@@ -39,7 +41,7 @@ Backend для медицинского приложения, разрабаты
 
 ## 🚀 Чеклист разработки
 
-### 1. Auth Service
+### Auth Service - Сервис аутентификация
 
 - [x] `GET /auth/confirm?email=email@mail.ru&token=token` - Подтверждение почты
 - [x] `POST /auth/login` - Вход пользователя
@@ -49,20 +51,21 @@ Backend для медицинского приложения, разрабаты
 - [x] `POST /auth/reset-password` - Изменение пароля
 - [x] `POST /auth/logout` - Выход пользователя
 
-### 2. Users Service
+### Users Service - Сервис пользователей
 
 - [x] `GET /users/me` - Получение собственного аккаунта
 - [x] `GET /users` - Получить пользователей (опц. с фильтрацией)
 - [x] `GET /users/:id` - Получить пользователя
 - [x] `POST /users/user` - Создать пользователя
 - [x] `POST /user/change-password` - Изменение пароля
-- [x] `POST /users/:id/profile` - Создать профиль пользователя
 - [x] `PATCH /users/me` - Обновление собственного аккаунта (опц. с профилем)
 - [x] `DELETE /users/:id - Удаление пользователя`
-- [ ] `POST /users/:id/documents`
-- [ ] `GET /users/:id/documents`
 
-### 2.1 Staff Service
+### Profile Service - Сервис пользовательского профиля
+
+- [x] `POST /users/:id/profile` - Создать профиль пользователя
+
+### Staff Service - Сервис модераторов
 
 - [x] `GET /staffs/me` - Получение собственного аккаунта модератора
 - [x] `GET /staffs/tickets` - Получение всех обращений от пользователей
@@ -71,13 +74,13 @@ Backend для медицинского приложения, разрабаты
 - [x] `POST /staffs/moderate/users/123` - Изменить статус пользователя
 - [ ] `POST /staffs/moderate/tickets/123` - Ответить на обращение, изменить статус
 
-### 3. Schedules Service
+### Schedules Service - Сервис расписания врача или клиники
 
 - [ ] `GET /schedules/doctor/:doctorId`
 - [ ] `PUT /schedules/doctor/:doctorId`
 - [ ] `GET /schedules/doctor/:doctorId/available-slots`
 
-### 4. Appointments Service
+### Appointments Service - Сервис записи врача или клиники
 
 - [ ] `POST /appointments`
 - [ ] `GET /appointments`
@@ -88,21 +91,30 @@ Backend для медицинского приложения, разрабаты
 - [ ] `POST /appointments/:id/complete`
 - [ ] `POST /appointments/:id/cancel`
 
-### 5. Catalog Service
+### Catalog Service - Сервис каталога
 
 - [ ] `GET /catalog/doctors`
 - [ ] `GET /catalog/doctors/:id`
 - [ ] `GET /catalog/clinics`
 - [ ] `GET /catalog/clinics/:id`
 
-### 6. Notifications Service
+### Rating Service - Сервис рейтинга
+
+- [ ] `GET /ratings/doctors`
+- [ ] `GET /ratings/clinics`
+- [ ] `GET /ratings/doctors/:id`
+- [ ] `GET /ratings/clinics/:id`
+- [ ] `POST /ratings/doctors/:id`
+- [ ] `POST /ratings/clinics/:id`
+
+### Notifications Service - Сервис уведомлений 
 
 - [ ] `GET /notifications`
 - [ ] `PATCH /notifications/:id/read`
 - [ ] `DELETE /notifications/:id`
 - [ ] `POST /notifications/mark-all-read`
 
-### 7. Support Service
+### Support Service - Сервис поддержки
 
 - [ ] `GET /support/tickets`
 - [ ] `POST /support/tickets`
@@ -110,20 +122,20 @@ Backend для медицинского приложения, разрабаты
 - [ ] `POST /support/tickets/:id/replies`
 - [ ] `DELETE /support/tickets/:id`
 
-### 8. Files Service
+### Files Service - Сервис файлов
 
-- [ ] `POST /files/upload`
+- [x] `POST /files/:userId/upload?folder=documents`
 - [ ] `GET /files/:id`
 - [ ] `DELETE /files/:id`
 
-### 9. Consent Service
+### Consent Service - Сервис политики
 
 - [ ] `GET /consents`
 - [ ] `POST /consents`
 - [ ] `PATCH /consents/:id`
 - [ ] `DELETE /consents/:id`
 
-### 10. AI Visualization Service
+### AI Visualization Service - Сервис AI визуализатора
 
 - [ ] `POST /ai/visualize`
 - [ ] `GET /ai/visualizations`
