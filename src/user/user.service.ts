@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
-import { Prisma, ROLE, User, USER_STATUS } from "@prisma/client"
+import { Prisma, ROLE, User, MODERATION_STATUS } from "@prisma/client"
 import { compare, genSalt, hash } from "bcryptjs"
 
 import { PrismaService } from "../prisma/prisma.service"
@@ -104,7 +104,7 @@ export class UserService {
         },
         moderation: {
           create: {
-            status: role === ROLE.PATIENT ? USER_STATUS.APPROVED : USER_STATUS.PENDING,
+            status: role === ROLE.PATIENT ? MODERATION_STATUS.APPROVED : MODERATION_STATUS.PENDING,
           },
         },
       },
