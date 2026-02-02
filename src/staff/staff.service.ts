@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
-import { Moderation, Prisma, Staff, Ticket, USER_STATUS } from "@prisma/client"
+import { Moderation, Prisma, Staff, Ticket, MODERATION_STATUS } from "@prisma/client"
 import { StaffWithRelations } from "src/common/types/user.types"
 import { PrismaService } from "src/prisma/prisma.service"
 import { CreateStaffDto } from "./dto/create-staff.dto"
@@ -52,7 +52,7 @@ export class StaffService {
     })
   }
 
-  async changeUserStatus(userId: string, status: USER_STATUS): Promise<HttpException> {
+  async changeUserStatus(userId: string, status: MODERATION_STATUS): Promise<HttpException> {
     await this.prisma.moderation.update({ where: { userId }, data: { status } })
     throw new HttpException(`Статус пользователя изменен на ${status}`, HttpStatus.OK)
   }
