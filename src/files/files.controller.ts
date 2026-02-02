@@ -5,9 +5,10 @@ import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { User } from "@prisma/client"
 import { AvatarValidationPipe } from "./pipe/avatar-validation.pipe"
+import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
 
 @Controller("files")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ConsentsRequiredGuard)
 export class FilesController {
   constructor(private filesServies: FilesService) {}
 

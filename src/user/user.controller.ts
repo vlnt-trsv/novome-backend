@@ -19,9 +19,10 @@ import { FindUsersQueryDto } from "./dto/find-users-query.dto"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { ChangePasswordDto } from "./dto/change-password.dto"
 import { AccessGuard } from "src/auth/guards/access.guard"
+import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
 
 @Controller("users")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ConsentsRequiredGuard)
 @SetMetadata("type", ["user"])
 export class UserController {
   constructor(private readonly userService: UserService) {}
