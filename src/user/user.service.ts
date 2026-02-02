@@ -27,6 +27,8 @@ export class UserService {
         doctor: user?.role === ROLE.DOCTOR,
         clinic: user?.role === ROLE.CLINIC,
         moderation: user?.role === ROLE.DOCTOR || user?.role === ROLE.CLINIC,
+        tickets: true,
+        userConsents: true,
       },
     })
   }
