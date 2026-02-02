@@ -8,22 +8,28 @@ datasource db {
 }
 
 model Auth {
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ --- 
   id                         String    @id @default(uuid()) @db.Uuid
   type                       AUTH_TYPE @default(USER)
   email                      String    @unique
+  phone                      String?   @unique
+  // --- ПАРОЛИ И КЛЮЧИ ---
+  hashedPassword             String
+  hashedRt                   String?
+  // --- ПОДТВЕРЖДЕНИЕ EMAIL ---
+  confirmed                  Boolean   @default(false)
   emailConfirmedAt           DateTime?
-  confirmationSentAt         DateTime?
   confirmationToken          String?   @unique
   confirmationTokenExpiresAt DateTime?
-  lastSignInAt               DateTime?
-  confirmed                  Boolean   @default(false)
-  phone                      String?
-  hashedPassword             String
-  lastChangePasswordAt       DateTime?
-  recoverySentAt             DateTime?
-  recoveryToken              String?
+  confirmationSentAt         DateTime?
+  // --- ВОССТАНОВЛЕНИЕ ДОСТУПА ---
+  recoveryToken              String?   @unique
   recoveryTokenExpiresAt     DateTime?
-  hashedRt                   String?
+  recoverySentAt             DateTime?
+  // --- БЕЗОПАСНОСТЬ И АУДИТ ---
+  lastSignInAt               DateTime?
+  lastChangePasswordAt       DateTime?
+  // --- СВЯЗИ (RELATIONS) ---
   user                       User?     @relation("UserAuth")
   staff                      Staff?    @relation("StaffAuth")
 
@@ -32,9 +38,11 @@ model Auth {
 }
 
 model Staff {
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ --- 
   id        String       @id @default(uuid()) @db.Uuid
   email     String       @unique
   fullName  String
+  // --- СВЯЗИ (RELATIONS) ---
   moderated Moderation[]
   auth      Auth         @relation("StaffAuth", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -43,139 +51,229 @@ model Staff {
 }
 
 model User {
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
   id         String      @id @default(uuid()) @db.Uuid
+  email      String      @unique
+  phone      String?     @unique
+  role       ROLE
+  // --- ПРОФИЛЬ ---
+  fullName   String
+  avatar     String?
+  language   String      @default("ru")
+  timezone   String      @default("Asia/Novosibirsk")
+  // --- МАРКЕТИНГ И КОММУНИКАЦИИ ---
+  leadSource String? // Откуда пришел пользователь (для аналитики)
+  // consents   Consents
+  // --- СЛУЖЕБНЫЕ ПОЛЯ ---
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  // --- СВЯЗИ (RELATIONS) ---
+  moderation Moderation?
+  tickets    Ticket[]
   patient    Patient?    @relation("Patient")
   doctor     Doctor?     @relation("Doctor")
   clinic     Clinic?     @relation("Clinic")
-  moderation Moderation?
-  role       ROLE
-  fullName   String
-  avatar     String?
-  email      String      @unique
-  phone      String?
-  aiToken    Int         @default(10)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
   auth       Auth        @relation("UserAuth", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  // --- ЭКОСИСТЕМА И БАЛАНС ---
+  aiToken    Int         @default(10)
 
+  @@index([email, phone])
   @@map("users")
   @@schema("public")
 }
 
 model Patient {
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
   id                     String                  @unique @db.Uuid
-  user                   User                    @relation("Patient", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  // --- ЛИЧНЫЕ И ДЕМОГРАФИЧЕСКИЕ ДАННЫЕ ---
   birthdate              DateTime?
   gender                 GENDER?
-  documents              Document[]
-  patientFavoriteDoctors PatientFavoriteDoctor[]
-  patientFavoriteClinics PatientFavoriteClinic[]
+  // --- МЕДИЦИНСКИЙ ПРОФИЛЬ (Анамнез) ---
+  medicalNotes           String?                 @db.Text
+  bloodType              String? // Например: "A+", "B-"
+  allergies              String[]                @default([])
+  chronicDiseases        String?                 @db.Text
+  // --- СЛУЖЕБНЫЕ ПОЛЯ ---
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
+  // --- СВЯЗИ (RELATIONS) ---
+  patientFavoriteDoctors PatientFavoriteDoctor[]
+  patientFavoriteClinics PatientFavoriteClinic[]
+  // appointments        Appointment[]           
+  documents              Document[]
+  // reviews             Review[]                
+  user                   User                    @relation("Patient", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@map("patients")
   @@schema("public")
 }
 
 model Doctor {
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
   id                 String                  @unique @db.Uuid
   clinicId           String?                 @db.Uuid
-  user               User                    @relation("Doctor", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  clinic             Clinic?                 @relation(fields: [clinicId], references: [id])
+  // --- ЛИЧНЫЕ И ДЕМОГРАФИЧЕСКИЕ ДАННЫЕ ---
   gender             GENDER?
   birthdate          DateTime?
-  license            String                  @unique
-  specialization     SPECIALIZATION
+  // --- ПРОФЕССИОНАЛЬНЫЙ БЛОК ---
   experience         Int
+  specializations    SPECIALIZATION[]
   education          String
   workplace          String?
+  // --- ПОЛЯ ДЛЯ HIGHLOAD, ПОИСКА И SEO ---
+  bio                String?                 @db.Text
+  // TODO: сначала создать сервис rating - rating Float @default(0.0) (кэшированное значение, чтобы не считайть каждый раз по 1000 отзывов) 
+  // reviewsCount       Int @default(0)
+  // --- БИЗНЕС-ЛОГИКА И СТАТУСЫ ---
+  isActive           Boolean                 @default(true) // Работает ли врач в системе
+  isSearchable       Boolean                 @default(true) // Виден ли в поиске (скрываем, если в отпуске)
+  // consultationDuration Int                     @default(30)
+  // --- ЮРИДИЧЕСКИЙ БЛОК ---
   inn                String                  @unique
-  documents          Document[]
-  favoriteByPatients PatientFavoriteDoctor[]
+  license            String                  @unique
+  // --- СЛУЖЕБНЫЕ ПОЛЯ ---
   createdAt          DateTime                @default(now())
   updatedAt          DateTime                @updatedAt
+  // --- СВЯЗИ (RELATIONS) ---
+  documents          Document[]
+  favoriteByPatients PatientFavoriteDoctor[]
+  // appointments    Appointment[]
+  // services        Service[]
+  // slots           Slot[]
+  user               User                    @relation("Doctor", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  clinic             Clinic?                 @relation(fields: [clinicId], references: [id])
 
   @@map("doctors")
   @@schema("public")
 }
 
 model Clinic {
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
   id                 String                  @unique @db.Uuid
-  user               User                    @relation("Clinic", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  // 
+  // --- ЮРИДИЧЕСКИЙ БЛОК ---
   legalName          String
-  legalAddress       String
-  actualAddress      String
+  brandName          String?
+  inn                String                  @unique
+  ogrn               String
   license            String
   directorName       String
   directorPosition   String
-  inn                String                  @unique
-  ogrn               String
-  documents          Document[]
-  doctors            Doctor[]
-  favoriteByPatients PatientFavoriteClinic[]
+  // --- ГЕОПОЗИЦИОНИРОВАНИЕ И КОНТАКТЫ ---
+  legalAddress       String
+  actualAddress      String
+  city               String?
+  phone              String?
+  website            String?
+  // --- ПОЛЯ ДЛЯ HIGHLOAD И МАРКЕТИНГА ---
+  description        String?                 @db.Text
+  // rating             Float                   @default(0.0)
+  // reviewsCount       Int                     @default(0)
+  // --- БИЗНЕС-ЛОГИКА И СТАТУСЫ ---
+  isActive           Boolean                 @default(true)
+  // workTime           Json? //  (например: { "mon": "09:00-21:00", ... })
+  // --- СЛУЖЕБНЫЕ ПОЛЯ ---
   createdAt          DateTime                @default(now())
   updatedAt          DateTime                @updatedAt
+  // --- СВЯЗИ (RELATIONS) ---
+  favoriteByPatients PatientFavoriteClinic[]
+  // services        Service[]
+  documents          Document[]
+  doctors            Doctor[]
+  user               User                    @relation("Clinic", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
+  @@index([city])
   @@map("clinics")
   @@schema("public")
 }
 
 model Moderation {
-  id          String      @id @default(uuid()) @db.Uuid
-  userId      String      @unique @db.Uuid
-  user        User        @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  moderatorId String?     @db.Uuid
-  moderator   Staff?      @relation(fields: [moderatorId], references: [id])
-  // 
-  status      USER_STATUS @default(PENDING)
-  comment     String?
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
+  id          String            @id @default(uuid()) @db.Uuid
+  userId      String            @unique @db.Uuid
+  moderatorId String?           @db.Uuid
+  status      MODERATION_STATUS @default(PENDING)
+  comment     String?           @db.Text
+  // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  // --- СВЯЗИ (RELATIONS) ---
   tickets     Ticket[]
-  moderatedAt DateTime    @default(now())
+  user        User              @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  moderator   Staff?            @relation(fields: [moderatorId], references: [id])
 
+  @@index([userId])
+  @@index([status])
   @@map("moderations")
   @@schema("moderation")
 }
 
 model Ticket {
-  id           String        @id @default(uuid()) @db.Uuid
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
+  id           String          @id @default(uuid()) @db.Uuid
+  userId       String          @db.Uuid
+  moderationId String?         @db.Uuid
   subject      String
-  description  String
-  status       TICKET_STATUS @default(OPEN)
-  createdAt    DateTime      @default(now())
-  moderationId String?       @db.Uuid
-  moderation   Moderation?   @relation(fields: [moderationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  status       TICKET_STATUS   @default(OPEN)
+  messages     TicketMessage[]
+  // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  // --- СВЯЗИ (RELATIONS) ---
+  user         User            @relation(fields: [userId], references: [id])
+  moderation   Moderation?     @relation(fields: [moderationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@map("tickets")
   @@schema("moderation")
 }
 
+model TicketMessage {
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
+  id         String   @id @default(uuid()) @db.Uuid
+  ticketId   String   @db.Uuid
+  senderId   String   @db.Uuid
+  text       String   @db.Text
+  isInternal Boolean  @default(false)
+  // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
+  createdAt  DateTime @default(now())
+  // --- СВЯЗИ (RELATIONS) ---
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("ticket_messages")
+  @@schema("moderation")
+}
+
 model Document {
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
   id        String   @unique @db.Uuid
   // type      DOCUMENT_TYPE
   patientId String?  @db.Uuid
   doctorId  String?  @db.Uuid
   clinicId  String?  @db.Uuid
+  // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // --- СВЯЗИ (RELATIONS) ---
   patient   Patient? @relation(fields: [patientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   doctor    Doctor?  @relation(fields: [doctorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   clinic    Clinic?  @relation(fields: [clinicId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   file      File     @relation("Documents", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@map("documents")
   @@schema("public")
 }
 
 model File {
+  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
   id           String    @id @default(uuid()) @db.Uuid
   originalName String
   mimeType     String
   size         Int
   s3Key        String    @unique
   url          String
-  documents    Document? @relation("Documents")
+  // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
   createdAt    DateTime  @default(now())
+  // --- СВЯЗИ (RELATIONS) ---
+  documents    Document? @relation("Documents")
 
   @@map("files")
   @@schema("file")
@@ -185,9 +283,9 @@ model PatientFavoriteDoctor {
   id       String   @id @default(uuid()) @db.Uuid
   userId   String   @db.Uuid
   doctorId String   @db.Uuid
+  addedAt  DateTime @default(now())
   patient  Patient  @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   doctor   Doctor   @relation(fields: [doctorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  addedAt  DateTime @default(now())
 
   @@unique([userId, doctorId])
   @@index([userId])
@@ -200,9 +298,9 @@ model PatientFavoriteClinic {
   id       String   @id @default(uuid()) @db.Uuid
   userId   String   @db.Uuid
   clinicId String   @db.Uuid
+  addedAt  DateTime @default(now())
   patient  Patient  @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   clinic   Clinic   @relation(fields: [clinicId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  addedAt  DateTime @default(now())
 
   @@unique([userId, clinicId])
   @@index([userId])
@@ -226,7 +324,7 @@ enum ROLE {
   @@schema("public")
 }
 
-enum USER_STATUS {
+enum MODERATION_STATUS {
   PENDING
   APPROVED
   REJECTED
