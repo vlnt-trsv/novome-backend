@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
-import { Auth } from "@prisma/client"
+import { Auth, Prisma, User } from "@prisma/client"
 import { PrismaService } from "src/prisma/prisma.service"
 import { LoginDto } from "./dto/login.dto"
 import { JwtService } from "@nestjs/jwt"
@@ -11,6 +12,8 @@ import { ConfigService } from "@nestjs/config"
 import { ResetPasswordDto } from "./dto/reset-password.dto"
 import { EmailService } from "src/email/email.service"
 import { ForgotPasswordDto } from "./dto/forgot-password.dto"
+import { ConsentService } from "src/consent/consent.service"
+import { Request } from "express"
 
 @Injectable()
 export class AuthService {
@@ -20,6 +23,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private emailService: EmailService,
+    private consentService: ConsentService,
   ) {}
 
   async confirmEmail(email: string, token: string): Promise<HttpException> {
@@ -48,6 +52,51 @@ export class AuthService {
     throw new HttpException("Почта успешно подтверждена", HttpStatus.OK)
   }
 
+  async sendConfirmationEmail(user: User, tx?: Prisma.TransactionClient) {
+    const prisma = tx ?? this.prisma
+
+    const auth = await prisma.auth.findUnique({
+      where: { id: user.id },
+      select: { confirmationTokenExpiresAt: true, confirmationSentAt: true },
+    })
+
+    if (!auth) throw new HttpException("Данные аутентификации не найдены", HttpStatus.NOT_FOUND)
+
+    if (
+      auth.confirmationSentAt &&
+      Date.now() - auth.confirmationSentAt.getTime() <
+        this.configService.get<number>("MIN_RETRY_DELAY")!
+    ) {
+      throw new HttpException(
+        "Попробуйте отправить письмо позже (через 1 минуту)",
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    console.log(this.configService.get<number>("CONFIRMATION_EMAIL_TOKEN_EXPIRES_AT"))
+
+    const confirmationToken = `${crypto.randomUUID()}-${new Date().getTime()}`
+    const expiresIn = Number(this.configService.get<number>("CONFIRMATION_EMAIL_TOKEN_EXPIRES_AT"))
+    const confirmationTokenExpiresAt = new Date(Date.now() + expiresIn)
+
+    console.log(confirmationTokenExpiresAt)
+
+    const updatedAuth = await prisma.auth.update({
+      where: { id: user.id },
+      data: {
+        confirmationToken,
+        confirmationTokenExpiresAt,
+        confirmationSentAt: new Date(),
+      },
+    })
+
+    await this.emailService.sendConfirmationEmail(user.email, confirmationToken)
+    return {
+      confirmationSentAt: updatedAuth.confirmationSentAt,
+      confirmationTokenExpiresAt: updatedAuth.confirmationTokenExpiresAt,
+    }
+  }
+
   async login(
     loginDto: LoginDto,
   ): Promise<{ email?: string; accessToken: string; refreshToken: string }> {
@@ -61,9 +110,30 @@ export class AuthService {
     return { email: auth.email, accessToken, refreshToken }
   }
 
-  async register(createUserDto: CreateUserDto): Promise<HttpException> {
-    await this.userService.createUser(createUserDto)
-    throw new HttpException("Успешная регистрация", HttpStatus.OK)
+  async register(createUserDto: CreateUserDto, req: Request): Promise<HttpException> {
+    const consents = await this.consentService.getConsents()
+
+    for (const consent of consents) {
+      if (!createUserDto.acceptedConsentIds.includes(consent.id) && consent.isRequired)
+        throw new HttpException(
+          "Необходимо принять обязательные соглашения",
+          HttpStatus.BAD_REQUEST,
+        )
+    }
+
+    await this.prisma.$transaction(
+      async (tx) => {
+        const user = await this.userService.createUser(createUserDto, tx)
+        await this.consentService.signConsents(createUserDto.acceptedConsentIds, user.id, req, tx)
+        await this.sendConfirmationEmail(user, tx)
+      },
+      { timeout: 10000 },
+    )
+
+    throw new HttpException(
+      "Успешная регистрация. Подтвердите почту, чтобы войти в систему",
+      HttpStatus.OK,
+    )
   }
 
   async logout(userId: string): Promise<HttpException> {
@@ -180,7 +250,7 @@ export class AuthService {
 
   private async _findByLogin({ email, password }: LoginDto): Promise<Auth> {
     const auth = await this.prisma.auth.findUnique({ where: { email } })
-    if (!auth || !auth?.hashedPassword) {
+    if (!auth) {
       throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
     }
     const comparePassword = await compare(password, auth.hashedPassword)

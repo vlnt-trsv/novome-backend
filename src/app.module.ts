@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common"
+import { forwardRef, Module } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
 import { AuthModule } from "./auth/auth.module"
 import { PrismaModule } from "./prisma/prisma.module"
@@ -9,7 +9,8 @@ import { StaffService } from "./staff/staff.service"
 import { StaffModule } from "./staff/staff.module"
 import { FilesModule } from "./files/files.module"
 import { S3Module } from "./s3/s3.module"
-import { ProfileModule } from './profile/profile.module';
+import { ProfileModule } from "./profile/profile.module"
+import { ConsentModule } from "./consent/consent.module"
 
 @Module({
   providers: [EmailService, StaffService],
@@ -26,6 +27,7 @@ import { ProfileModule } from './profile/profile.module';
     FilesModule,
     S3Module,
     ProfileModule,
+    ConsentModule,
   ],
 })
 export class AppModule {}

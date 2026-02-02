@@ -43,7 +43,8 @@ Backend для медицинского приложения, разрабаты
 
 ### Auth Service - Сервис аутентификация
 
-- [x] `GET /auth/confirm?email=email@mail.ru&token=token` - Подтверждение почты
+- [x] `GET /auth/confirm` - Подтверждение почты
+- [x] `POST /auth/send-confirm` - Отправить ссылку на подтверждение почты
 - [x] `POST /auth/login` - Вход пользователя
 - [x] `POST /auth/register` - Регистрация пользователя
 - [x] `POST /auth/refresh` - Обновление токена
@@ -127,10 +128,10 @@ Backend для медицинского приложения, разрабаты
 
 ### Consent Service - Сервис политики
 
-- [ ] `GET /consents` - Получение активных политик
-- [ ] `POST /consents` - Создание новой версии документа
-- [ ] `POST /consents/:id` - Редактирование или публикация
-- [ ] `POST /consents/sign` - Подписание политики
+- [x] `GET /consents` - Получение активных политик
+- [x] `POST /consents` - Создание новой версии документа
+- [x] `POST /consents/:id` - Публикация политики
+- [x] `PATCH /consents/:id` - Редктирование политики
 
 ### Services & Prices - Сервис медицинских услуг
 

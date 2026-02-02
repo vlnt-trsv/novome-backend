@@ -4,7 +4,6 @@ import { compare, genSalt, hash } from "bcryptjs"
 
 import { PrismaService } from "../prisma/prisma.service"
 import { CreateUserDto } from "./dto/create-user.dto"
-import { EmailService } from "src/email/email.service"
 import { UpdateUserDto } from "./dto/update-user.dto"
 import { UserWithRelations } from "src/common/types/user.types"
 import { FindUsersQueryDto } from "./dto/find-users-query.dto"
@@ -13,10 +12,7 @@ import { ROLE_CONST } from "src/common/constants/user.constants"
 
 @Injectable()
 export class UserService {
-  constructor(
-    private prisma: PrismaService,
-    private emailService: EmailService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async findOne(where: Prisma.UserWhereUniqueInput): Promise<UserWithRelations | null> {
     const user = await this.prisma.user.findUnique({ where })
@@ -31,6 +27,8 @@ export class UserService {
         doctor: user?.role === ROLE.DOCTOR,
         clinic: user?.role === ROLE.CLINIC,
         moderation: user?.role === ROLE.DOCTOR || user?.role === ROLE.CLINIC,
+        tickets: true,
+        userConsents: true,
       },
     })
   }
@@ -71,23 +69,16 @@ export class UserService {
     }
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  async createUser(createUserDto: CreateUserDto, tx?: Prisma.TransactionClient): Promise<User> {
+    const prisma = tx ?? this.prisma
     const { fullName, password, email, phone, role } = createUserDto
-    const auth = await this.prisma.auth.findUnique({ where: { email } })
-    if (auth) {
-      throw new HttpException("Этот email уже существует", HttpStatus.BAD_REQUEST)
-    }
+
     const salt = await genSalt(10)
     const hashedPassword = await hash(password, salt)
 
-    const confirmationToken = `${crypto.randomUUID()}-${new Date().getTime()}`
-    const confirmationTokenExpiresAt = new Date(
-      Date.now() + Number(process.env.CONFIRMATION_EMAIL_TOKEN_EXPIRES_AT) * 60 * 60 * 1000,
-    )
-
-    const newUser = await this.prisma.user.create({
+    return await prisma.user.create({
       data: {
-        role: role as ROLE,
+        role: role,
         fullName,
         email,
         phone,
@@ -95,9 +86,6 @@ export class UserService {
           create: {
             email,
             hashedPassword,
-            confirmationToken,
-            confirmationTokenExpiresAt,
-            confirmationSentAt: new Date(),
             phone,
             type: "USER",
           },
@@ -109,9 +97,6 @@ export class UserService {
         },
       },
     })
-
-    await this.emailService.sendConfirmationEmail(newUser.email, confirmationToken)
-    return newUser
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
@@ -163,7 +148,7 @@ export class UserService {
     const { oldPassword, newPassword } = changePasswordDto
 
     const auth = await this.prisma.auth.findUnique({ where: { id: userId } })
-    const isPasswordMatch = await compare(oldPassword, auth?.hashedPassword as string)
+    const isPasswordMatch = await compare(oldPassword, auth?.hashedPassword ?? "")
 
     if (!isPasswordMatch) throw new HttpException("Неверный текущий пароль", HttpStatus.BAD_REQUEST)
 
