@@ -11,6 +11,7 @@ import { FilesModule } from "./files/files.module"
 import { S3Module } from "./s3/s3.module"
 import { ProfileModule } from "./profile/profile.module"
 import { ConsentModule } from "./consent/consent.module"
+import { ScheduleModule } from "./schedule/schedule.module"
 
 @Module({
   providers: [EmailService, StaffService],
@@ -28,6 +29,7 @@ import { ConsentModule } from "./consent/consent.module"
     S3Module,
     ProfileModule,
     ConsentModule,
+    ScheduleModule,
   ],
 })
 export class AppModule {}
