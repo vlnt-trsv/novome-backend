@@ -66,7 +66,12 @@ export class ProfileService {
         return await this.prisma.$transaction(async (tx): Promise<Doctor> => {
           const { birthdate, ...data } = profileData as DoctorDto
 
-          await tx.moderation.update({ where: { userId: user.id }, data: { status: "PENDING" } })
+          await tx.moderation.create({
+            data: {
+              status: "PENDING",
+              userId: user.id,
+            },
+          })
 
           const profile = await tx.doctor.create({
             data: {
@@ -95,7 +100,7 @@ export class ProfileService {
             })
           }
 
-          await this.scheduleService.createDefaultSchedule({ doctorId: profile.id }, tx)
+          await this.scheduleService.createDefaultSchedule(profile.id, tx)
 
           return profile
         })
@@ -118,7 +123,12 @@ export class ProfileService {
         return await this.prisma.$transaction(async (tx): Promise<Clinic> => {
           const { ...data } = profileData as ClinicDto
 
-          await tx.moderation.update({ where: { userId: user.id }, data: { status: "PENDING" } })
+          await tx.moderation.create({
+            data: {
+              status: "PENDING",
+              userId: user.id,
+            },
+          })
 
           const profile = await tx.clinic.create({
             data: {
@@ -146,7 +156,7 @@ export class ProfileService {
             })
           }
 
-          await this.scheduleService.createDefaultSchedule({ clinicId: profile.id }, tx)
+          await this.scheduleService.createDefaultSchedule(profile.id, tx)
 
           return profile
         })

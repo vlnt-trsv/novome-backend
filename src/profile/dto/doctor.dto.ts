@@ -2,13 +2,15 @@ import { ApiProperty } from "@nestjs/swagger"
 import { GENDER, SPECIALIZATION } from "@prisma/client"
 import { Type } from "class-transformer"
 import {
+  IsArray,
   IsDateString,
   IsEnum,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   Length,
-  MinLength,
+  // MinLength,
 } from "class-validator"
 
 export class DoctorDto {
@@ -30,12 +32,19 @@ export class DoctorDto {
   @IsString()
   license: string
 
-  @ApiProperty({ example: "RHINOPLASTY", description: "Специализация", enum: SPECIALIZATION })
-  @IsEnum(SPECIALIZATION)
-  specialization: SPECIALIZATION
+  @ApiProperty({
+    example: "RHINOPLASTY",
+    description: "Специализация",
+    enum: SPECIALIZATION,
+    isArray: true,
+  })
+  // @IsArray()
+  // @IsEnum(SPECIALIZATION, { each: true })
+  // @Type(() => String)
+  specializations: SPECIALIZATION[]
 
   @ApiProperty({ example: 5, description: "Опыт работы (лет)" })
-  @IsInt()
+  @IsNumber()
   @Type(() => Number)
   // @MinLength(0)
   experience: number
