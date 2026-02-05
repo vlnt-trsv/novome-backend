@@ -4,9 +4,9 @@ model Schedule {
     id           String  @id @default(uuid()) @db.Uuid
     doctorId     String? @db.Uuid
     clinicId     String? @db.Uuid
-    dayOfWeek    DAY_OF_WEEK
-    startTime    String
-    endTime      String
+    dayOfWeek    Int
+    startAt      String
+    endAt        String
     slotDuration Int     @default(30)
     doctor       Doctor? @relation(fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     clinic       Clinic? @relation(fields: [clinicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -31,16 +31,16 @@ model Break {
 
 model TimeSlot {
     id        String      @id @default(uuid()) @db.Uuid
-    doctorId  String      @db.Uuid
-    clinicId  String      @db.Uuid
+    doctorId  String?     @db.Uuid
+    clinicId  String?     @db.Uuid
     startAt   DateTime
     endAt     DateTime
     status    SLOT_STATUS @default(AVAILABLE)
     // appointmentId String? @unique @db.Uuid
     createdAt DateTime    @default(now())
     updatedAt DateTime    @updatedAt
-    doctor    Doctor      @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-    clinic    Clinic      @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+    doctor    Doctor?     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+    clinic    Clinic?     @relation(fields: [clinicId], references: [id], onDelete: Cascade)
 
     @@index([doctorId, startAt])
     @@index([clinicId, startAt])
@@ -60,6 +60,7 @@ enum BREAK_TYPE {
 enum SLOT_STATUS {
     AVAILABLE
     BOOKED
+    LOCKED
     CANCELED
 
     @@schema("booking")
