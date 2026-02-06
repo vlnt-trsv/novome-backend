@@ -18,10 +18,11 @@ model Schedule {
 model Break {
     id          String     @id @default(uuid()) @db.Uuid
     doctorId    String     @db.Uuid
-    clinicId    String?    @db.Uuid
     type        BREAK_TYPE @default(LUNCH)
-    startAt     DateTime
-    endAt       DateTime
+    startAt     DateTime?
+    endAt       DateTime?
+    startTime   String?
+    endTime     String?
     isRecurring Boolean    @default(false)
     doctor      Doctor     @relation(fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
