@@ -66,13 +66,3 @@ enum SLOT_STATUS {
 
     @@schema("booking")
 }
-
-enum DAY_OF_WEEK {
-    MONDAY
-    TUESDAY
-    WEDNESDAY
-    THURSDAY
-    FRIDAY
-
-    @@schema("booking")
-}
