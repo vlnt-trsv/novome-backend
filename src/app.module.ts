@@ -1,4 +1,5 @@
-import { forwardRef, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
+import { ScheduleModule as NestScheduleModule } from "@nestjs/schedule"
 import { ConfigModule } from "@nestjs/config"
 import { AuthModule } from "./auth/auth.module"
 import { PrismaModule } from "./prisma/prisma.module"
@@ -20,6 +21,7 @@ import { ScheduleModule } from "./schedule/schedule.module"
       isGlobal: true,
       envFilePath: ".env",
     }),
+    NestScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     UserModule,
