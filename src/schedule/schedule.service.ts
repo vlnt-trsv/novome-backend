@@ -1,13 +1,27 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { Injectable } from "@nestjs/common"
-import { Prisma } from "@prisma/client"
-import { addMinutes } from "date-fns"
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common"
+import { BREAK_TYPE, Prisma, SLOT_STATUS, TimeSlot } from "@prisma/client"
+import { addMinutes, endOfDay } from "date-fns"
 import { ROLE_CONST } from "src/common/constants/user.constants"
 import { PrismaService } from "src/prisma/prisma.service"
 
 @Injectable()
 export class ScheduleService {
+  private readonly logger = new Logger(ScheduleService.name)
   constructor(private prisma: PrismaService) {}
+
+  async getSchedules(targetId: string, date?: Date) {
+    return await this.prisma.$transaction(async (tx) => {
+      if (date) {
+        return await this._generateSlots(targetId, date)
+      }
+
+      return await tx.schedule.findMany({
+        where: {
+          OR: [{ doctorId: targetId }, { clinicId: targetId }],
+        },
+      })
+    })
+  }
 
   async createDefaultSchedule(
     targetId: string,
@@ -33,63 +47,115 @@ export class ScheduleService {
     })
   }
 
-  async generateSlots(
-    targetId: string,
-    date: Date,
-    constraintId?: string,
-    tx?: Prisma.TransactionClient,
-  ) {
-    const prisma = tx ?? this.prisma
-    const dayOfWeek = new Date(date).getUTCDay()
-
-    const targetSchedule = await this._getSchedule(targetId, dayOfWeek, prisma)
-    if (!targetSchedule) return // В этот день врач не работает
-
-    let limitStart = targetSchedule.startAt
-    let limitEnd = targetSchedule.endAt
-
-    if (constraintId) {
-      const clinicSchedule = await this._getSchedule(constraintId, dayOfWeek, prisma)
-      if (!clinicSchedule) return // Клиника закрыта - слотов не будет
-      limitStart = limitStart > clinicSchedule.startAt ? limitStart : clinicSchedule.startAt
-      limitEnd = limitEnd < clinicSchedule.endAt ? limitEnd : clinicSchedule.endAt
+  private async _generateSlots(targetId: string, date: Date, constraintId?: string) {
+    const requestedDate = new Date(date)
+    if (new Date() > requestedDate) {
+      throw new HttpException("Нельзя получать прошедшие даты", HttpStatus.BAD_REQUEST)
     }
-
-    if (limitStart >= limitEnd) return // Врач и клиника не пересекаются по времени
-
-    let currentSlotTime = this._combineDateAndTime(date, limitStart)
-    const endTime = this._combineDateAndTime(date, limitEnd)
-    const slotsToCreate: Prisma.TimeSlotCreateManyInput[] = []
+    const dayOfWeek = requestedDate.getUTCDay()
 
     const user = await this.prisma.user.findUnique({
       where: { id: targetId },
       select: { role: true },
     })
+
+    const targetBreak = await this._getBreak(targetId)
+    const recurringBreaks = targetBreak.find((rec) => rec.isRecurring === true)
+    const absoluteBreaks = targetBreak.filter((rec) => rec.isRecurring === false)
+
+    const targetSchedule = await this._getSchedule(targetId, dayOfWeek)
+    if (!targetSchedule) return [] // В этот день врач не работает
+
+    let limitStart = targetSchedule.startAt
+    let limitEnd = targetSchedule.endAt
+
+    if (constraintId) {
+      const clinicSchedule = await this._getSchedule(constraintId, dayOfWeek)
+      if (!clinicSchedule) return [] // Клиника закрыта - слотов не будет
+      limitStart = limitStart > clinicSchedule.startAt ? limitStart : clinicSchedule.startAt
+      limitEnd = limitEnd < clinicSchedule.endAt ? limitEnd : clinicSchedule.endAt
+    }
+
+    if (limitStart >= limitEnd) return [] // Врач и клиника не пересекаются по времени
+
+    const startOfDay = new Date(requestedDate.setHours(0, 0, 0, 0))
+    const endOfDay = new Date(requestedDate.setHours(23, 59, 59, 999))
+
+    const busySlots = await this.prisma.timeSlot.findMany({
+      where: {
+        doctorId: targetId,
+        startAt: { gte: startOfDay, lte: endOfDay },
+        status: { not: SLOT_STATUS.AVAILABLE },
+      },
+      select: { startAt: true },
+    })
+
+    const busyTimestamps = new Set(busySlots.map((slot) => slot.startAt.getTime()))
+
+    let currentSlotTime = this._combineDateAndTime(date, limitStart)
+    const endTime = this._combineDateAndTime(date, limitEnd)
+    const slotsToCreate: Prisma.TimeSlotCreateManyInput[] = []
     const roleKey = ROLE_CONST[user?.role ?? ""]
 
     while (currentSlotTime < endTime) {
       const nextSlotTime = addMinutes(currentSlotTime, targetSchedule.slotDuration)
       if (nextSlotTime > endTime) break
 
-      slotsToCreate.push({
-        [`${roleKey}Id`]: targetId,
-        clinicId: constraintId ?? null,
-        startAt: currentSlotTime,
-        endAt: nextSlotTime,
-      })
+      const isBusy = busyTimestamps.has(currentSlotTime.getTime())
+
+      // const isDuringBreak = absoluteBreaks.some(
+      //   (b) => currentSlotTime < b.endAt && nextSlotTime > b.startAt,
+      // )
+
+      // const isDuringRecurring = recurringBreaks.some((b) => {
+      //   return this._checkTimeOverlap(currentSlotTime, nextSlotTime, b.startTime, b.endTime)
+      // })
+
+      if (!isBusy) {
+        slotsToCreate.push({
+          [`${roleKey}Id`]: targetId,
+          clinicId: constraintId ?? null,
+          startAt: currentSlotTime,
+          endAt: nextSlotTime,
+        })
+      }
 
       currentSlotTime = nextSlotTime
     }
 
     if (slotsToCreate.length > 0) {
-      return await prisma.timeSlot.createMany({ data: slotsToCreate })
+      return await this.prisma.$transaction(async (tx) => {
+        await tx.timeSlot.deleteMany({
+          where: {
+            doctorId: targetId,
+            status: SLOT_STATUS.AVAILABLE,
+          },
+        })
+        await tx.timeSlot.createMany({
+          data: slotsToCreate,
+          skipDuplicates: true,
+        })
+        return await tx.timeSlot.findMany({
+          where: {
+            doctorId: targetId,
+            startAt: { gte: startOfDay, lte: endOfDay },
+          },
+          orderBy: { startAt: "asc" },
+        })
+      })
     }
   }
 
-  private async _getSchedule(targetId: string, dayOfWeek: number, tx?: Prisma.TransactionClient) {
+  private async _getBreak(doctorId: string, tx?: Prisma.TransactionClient) {
     const prisma = tx ?? this.prisma
 
-    return await prisma.schedule.findFirst({
+    return await prisma.break.findMany({
+      where: { doctorId },
+    })
+  }
+
+  private async _getSchedule(targetId: string, dayOfWeek: number) {
+    return await this.prisma.schedule.findFirst({
       where: {
         OR: [{ doctorId: targetId }, { clinicId: targetId }],
         dayOfWeek,
