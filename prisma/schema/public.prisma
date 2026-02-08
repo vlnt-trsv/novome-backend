@@ -90,6 +90,7 @@ model Doctor {
     // services        Service[]
     schedules          Schedule[]
     timeSlots          TimeSlot[]
+    workRules          WorkRule[]
     breaks             Break[]
     user               User                    @relation("Doctor", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
     clinic             Clinic?                 @relation(fields: [clinicId], references: [id])
