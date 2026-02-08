@@ -7,6 +7,7 @@ import { PrismaService } from "src/prisma/prisma.service"
 import { PatientDto } from "./dto/patient.dto"
 import { DoctorDto } from "./dto/doctor.dto"
 import { ClinicDto } from "./dto/clinic.dto"
+import { ScheduleService } from "src/schedule/schedule.service"
 
 interface UploadedFileResult {
   key: string
@@ -20,6 +21,7 @@ interface UploadedFileResult {
 export class ProfileService {
   constructor(
     private fileService: FilesService,
+    private scheduleService: ScheduleService,
     private prisma: PrismaService,
   ) {}
 
@@ -64,6 +66,13 @@ export class ProfileService {
         return await this.prisma.$transaction(async (tx): Promise<Doctor> => {
           const { birthdate, ...data } = profileData as DoctorDto
 
+          await tx.moderation.create({
+            data: {
+              status: "PENDING",
+              userId: user.id,
+            },
+          })
+
           const profile = await tx.doctor.create({
             data: {
               id: user.id,
@@ -90,6 +99,9 @@ export class ProfileService {
               },
             })
           }
+
+          await this.scheduleService.createDefaultSchedule(profile.id, tx)
+
           return profile
         })
       } catch (error) {
@@ -110,6 +122,13 @@ export class ProfileService {
 
         return await this.prisma.$transaction(async (tx): Promise<Clinic> => {
           const { ...data } = profileData as ClinicDto
+
+          await tx.moderation.create({
+            data: {
+              status: "PENDING",
+              userId: user.id,
+            },
+          })
 
           const profile = await tx.clinic.create({
             data: {
@@ -136,6 +155,9 @@ export class ProfileService {
               },
             })
           }
+
+          await this.scheduleService.createDefaultSchedule(profile.id, tx)
+
           return profile
         })
       } catch (error) {

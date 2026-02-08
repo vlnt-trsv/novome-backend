@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common"
 import { StaffService } from "./staff.service"
-import { AUTH_TYPE, Moderation, Staff, Ticket, USER_STATUS } from "@prisma/client"
+import { AUTH_TYPE, Moderation, Staff, Ticket, MODERATION_STATUS } from "@prisma/client"
 import { CurrentStaff } from "src/common/decorators/current-staff.decorator"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { CreateStaffDto } from "./dto/create-staff.dto"
@@ -33,8 +33,11 @@ export class StaffController {
     return await this.staffService.createStaff(createStaffDto)
   }
 
-  @Post("/moderate/users/:userId")
-  async changeUserStatus(@Param("userId") userId: string, @Body("status") status: USER_STATUS) {
+  @Post("users/:userId")
+  async changeUserStatus(
+    @Param("userId") userId: string,
+    @Body("status") status: MODERATION_STATUS,
+  ) {
     return await this.staffService.changeUserStatus(userId, status)
   }
 }

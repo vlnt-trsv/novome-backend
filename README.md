@@ -43,7 +43,8 @@ Backend для медицинского приложения, разрабаты
 
 ### Auth Service - Сервис аутентификация
 
-- [x] `GET /auth/confirm?email=email@mail.ru&token=token` - Подтверждение почты
+- [x] `GET /auth/confirm` - Подтверждение почты
+- [x] `POST /auth/send-confirm` - Отправить ссылку на подтверждение почты
 - [x] `POST /auth/login` - Вход пользователя
 - [x] `POST /auth/register` - Регистрация пользователя
 - [x] `POST /auth/refresh` - Обновление токена
@@ -68,76 +69,99 @@ Backend для медицинского приложения, разрабаты
 ### Staff Service - Сервис модераторов
 
 - [x] `GET /staffs/me` - Получение собственного аккаунта модератора
-- [x] `GET /staffs/tickets` - Получение всех обращений от пользователей
+- [x] `GET /staffs/tickets` - Получение всех тикетов от пользователей
+- [x] `GET /staffs/tickets/:id` - Получение детали тикета от пользователя
+- [x] `GET /staffs/reviews/:id` - Получение детали отзыва от пользователя
 - [x] `GET /staffs/moderations` - Получение всех заявок на регистрацию пользователя (доктор, клиника)
 - [x] `POST /staffs` - Создание модератора
-- [x] `POST /staffs/moderate/users/123` - Изменить статус пользователя
-- [ ] `POST /staffs/moderate/tickets/123` - Ответить на обращение, изменить статус
+- [x] `POST /staffs/users/:id` - Изменить статус пользователя
+- [ ] `POST /staffs/tickets/:id` - Ответить на тикет, изменить статус
+- [ ] `POST /staffs/reviews/:id` - Модерация отзыва (опубликовать/скрыть/удалить)
 
 ### Schedules Service - Сервис расписания врача или клиники
 
-- [ ] `GET /schedules/doctor/:doctorId`
-- [ ] `PUT /schedules/doctor/:doctorId`
-- [ ] `GET /schedules/doctor/:doctorId/available-slots`
+- [x] `GET /schedules/:id` - Получить расписание по id (?date=20.02.20 - при получение конкретного расписания с слотами)
+- [ ] `PATCH /schedules/slots/:id` - Ручное изменение слота (заблокировать время/перенести)
+- [ ] `DELETE /schedules/slots/:id` - Удаление слотов (массив или одиночно) на дни отпуска или иное
 
 ### Appointments Service - Сервис записи врача или клиники
 
-- [ ] `POST /appointments`
-- [ ] `GET /appointments`
-- [ ] `GET /appointments/:id`
-- [ ] `PATCH /appointments/:id`
-- [ ] `DELETE /appointments/:id`
-- [ ] `POST /appointments/:id/confirm`
-- [ ] `POST /appointments/:id/complete`
-- [ ] `POST /appointments/:id/cancel`
+- [ ] `GET /appointments` - Получить информацию о записях на приём
+- [ ] `GET /appointments/:id` - Получить детальную информацию о записи на приём
+- [ ] `POST /appointments` - Создать запись на приём к врачу или клинике
+- [ ] `POST /appointments/:id` - Изменить статус записи (подтверждение/завершение/отмена)
 
 ### Catalog Service - Сервис каталога
 
-- [ ] `GET /catalog/doctors`
-- [ ] `GET /catalog/doctors/:id`
-- [ ] `GET /catalog/clinics`
-- [ ] `GET /catalog/clinics/:id`
+- [ ] `GET /catalog/doctors` - Получить каталог врачей
+- [ ] `GET /catalog/clinics` - Получить каталог клиник
+- [ ] `GET /catalog/search` - Глобальный поиск (по врачам, клиникам, услугам одновременно)
+- [ ] `GET /catalog/specializations` - Получить дерево специализаций (для меню и фильтров)
 
 ### Rating Service - Сервис рейтинга
 
-- [ ] `GET /ratings/doctors`
-- [ ] `GET /ratings/clinics`
-- [ ] `GET /ratings/doctors/:id`
-- [ ] `GET /ratings/clinics/:id`
-- [ ] `POST /ratings/doctors/:id`
-- [ ] `POST /ratings/clinics/:id`
+- [ ] `POST /ratings/doctors/:id` - Поставить оценку врачу
+- [ ] `POST /ratings/clinics/:id` - Поставить оценку клинике
 
-### Notifications Service - Сервис уведомлений 
+### Notifications Service - Сервис уведомлений
 
-- [ ] `GET /notifications`
-- [ ] `PATCH /notifications/:id/read`
-- [ ] `DELETE /notifications/:id`
-- [ ] `POST /notifications/mark-all-read`
+- [ ] `GET /notifications` - Получить уведомления
+- [ ] `POST /notifications/mark-all-read` - Пометить все уведомления, как прочитанные
+- [ ] `POST /notifications/:id/read` - Пометить уведомление, как прочитанное
+- [ ] `DELETE /notifications/:id` - Удалить уведомление
 
 ### Support Service - Сервис поддержки
 
-- [ ] `GET /support/tickets`
-- [ ] `POST /support/tickets`
-- [ ] `GET /support/tickets/:id`
-- [ ] `POST /support/tickets/:id/replies`
-- [ ] `DELETE /support/tickets/:id`
+- [ ] `GET /support/tickets` - Получить тикеты
+- [ ] `GET /support/tickets/:id` - Получить информацию о тиките
+- [ ] `POST /support/tickets` - Создать тикет
+- [ ] `POST /support/tickets/:id/replies` - Ответить сообщение в тикете
+- [ ] `POST /support/tickets/:id/close` - Закрыть тикет (пользователь сам закрыл проблему)
 
 ### Files Service - Сервис файлов
 
-- [x] `POST /files/:userId/upload?folder=documents`
-- [ ] `GET /files/:id`
-- [ ] `DELETE /files/:id`
+- [ ] `GET /files/:id` - Получить файл
+- [x] `POST /files/avatar` - Поставить фото в профиль
+- [ ] `DELETE /files/:id` - Удалить файл
 
 ### Consent Service - Сервис политики
 
-- [ ] `GET /consents`
-- [ ] `POST /consents`
-- [ ] `PATCH /consents/:id`
-- [ ] `DELETE /consents/:id`
+- [x] `GET /consents` - Получение активных политик
+- [x] `POST /consents` - Создание новой версии документа
+- [x] `POST /consents/:id` - Публикация политики
+- [x] `PATCH /consents/:id` - Редктирование политики
+
+### Services & Prices - Сервис медицинских услуг
+
+- [ ] `GET /services/doctor/:id` - Получить прайс-лист врача
+- [ ] `GET /services/clinic/:id` - Получить прайс-лист клиники
+- [ ] `POST /services` - Создать услугу
+- [ ] `PATCH /services/:id` - Обновить цену или описание услуги
+- [ ] `DELETE /services/:id` - Архивизация услуги
+
+### Portfolio Service - Сервис портфолио врача (Кейсы до/после)
+
+- [ ] `GET /portfolios` - Лента работ (с фильтрами по типу операции)
+- [ ] `GET /portfolios/:id` - Детальный просмотр кейса
+- [ ] `GET /portfolios/doctor/:id` - Все работы конкретного врача
+- [ ] `POST /portfolios` - Создать кейс (загрузка фото до/после, описание)
+- [ ] `PATCH /portfolios/:id` - Редактирование кейса
+- [ ] `DELETE /portfolios/:id` - Удаление кейса
+
+### Relationships Service - Сервис связи между врачом и клиникой
+
+- [ ] `POST /relationships/invite` - Клиника приглашает врача
+- [ ] `PATCH /relationships/:id/status` - Подтверждение связи
+- [ ] `DELETE /relationships/:id` - Уволнение/Удаление связи
+
+### Dictionary Service - Сервис справочника
+
+- [ ] `GET /dictionaries/cities` - Список городов присутствия
+- [ ] `GET /dictionaries/languages` - Языки приема
 
 ### AI Visualization Service - Сервис AI визуализатора
 
-- [ ] `POST /ai/visualize`
-- [ ] `GET /ai/visualizations`
-- [ ] `GET /ai/visualizations/:id`
-- [ ] `DELETE /ai/visualizations/:id`
+- [ ] `GET /ai/visualizations` - История генераций
+- [ ] `GET /ai/visualizations/:id` - Результат конкретной генерации
+- [ ] `POST /ai/visualize` - Запуск процесса
+- [ ] `DELETE /ai/visualizations/:id` - Удаление результатата из истории

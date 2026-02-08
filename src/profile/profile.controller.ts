@@ -7,9 +7,10 @@ import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { FilesInterceptor } from "@nestjs/platform-express"
 import { FilesValidationPipe } from "src/files/pipe/files-validation.pipe"
+import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
 
 @Controller("profiles")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ConsentsRequiredGuard)
 export class ProfileController {
   constructor(private profileService: ProfileService) {}
 

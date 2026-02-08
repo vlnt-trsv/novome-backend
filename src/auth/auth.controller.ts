@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 import {
   Body,
   Controller,
@@ -38,6 +39,12 @@ export class AuthController {
     return await this.authService.confirmEmail(email, token)
   }
 
+  @Post("send-confirm")
+  @UseGuards(JwtAuthGuard)
+  async sendConfirm(@CurrentUser() user: User) {
+    return await this.authService.sendConfirmationEmail(user)
+  }
+
   @UsePipes(new ValidationPipe())
   @Post("login")
   async login(
@@ -61,8 +68,11 @@ export class AuthController {
 
   @UsePipes(new ValidationPipe())
   @Post("register")
-  async register(@Body() createUserDto: CreateUserDto): Promise<HttpException> {
-    return await this.authService.register(createUserDto)
+  async register(
+    @Body() createUserDto: CreateUserDto,
+    @Req() req: Request,
+  ): Promise<HttpException> {
+    return await this.authService.register(createUserDto, req)
   }
 
   @UseGuards(JwtAuthGuard)
@@ -74,15 +84,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post("refresh")
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const refreshToken = req.cookies["refreshToken"]
+    const refreshToken: string = req.cookies["refreshToken"]
     if (!refreshToken) throw new HttpException("Некорректный токен", HttpStatus.UNAUTHORIZED)
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
     const { sub: userId } = this.jwtService.decode(refreshToken)
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const result = await this.authService.refresh(userId, refreshToken)
+    const result = await this.authService.refresh(userId as string, refreshToken)
 
     res.cookie("refreshToken", result.tokens.refreshToken, {
       httpOnly: true,
