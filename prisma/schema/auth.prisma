@@ -1,0 +1,36 @@
+model Auth {
+    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ --- 
+    id                         String    @id @default(uuid()) @db.Uuid
+    type                       AUTH_TYPE @default(USER)
+    email                      String    @unique
+    phone                      String?   @unique
+    // --- ПАРОЛИ И КЛЮЧИ ---
+    hashedPassword             String
+    hashedRt                   String?
+    // --- ПОДТВЕРЖДЕНИЕ EMAIL ---
+    confirmed                  Boolean   @default(false)
+    emailConfirmedAt           DateTime?
+    confirmationToken          String?   @unique
+    confirmationTokenExpiresAt DateTime?
+    confirmationSentAt         DateTime?
+    // --- ВОССТАНОВЛЕНИЕ ДОСТУПА ---
+    recoveryToken              String?   @unique
+    recoveryTokenExpiresAt     DateTime?
+    recoverySentAt             DateTime?
+    // --- БЕЗОПАСНОСТЬ И АУДИТ ---
+    lastSignInAt               DateTime?
+    lastChangePasswordAt       DateTime?
+    // --- СВЯЗИ (RELATIONS) ---
+    user                       User?     @relation("UserAuth")
+    staff                      Staff?    @relation("StaffAuth")
+
+    @@map("auths")
+    @@schema("auth")
+}
+
+enum AUTH_TYPE {
+    USER
+    STAFF
+
+    @@schema("auth")
+}

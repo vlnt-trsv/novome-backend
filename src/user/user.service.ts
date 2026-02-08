@@ -90,11 +90,6 @@ export class UserService {
             type: "USER",
           },
         },
-        moderation: {
-          create: {
-            status: role === ROLE.PATIENT ? MODERATION_STATUS.APPROVED : MODERATION_STATUS.PENDING,
-          },
-        },
       },
     })
   }

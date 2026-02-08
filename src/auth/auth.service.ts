@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import { Auth, Prisma, User } from "@prisma/client"
 import { PrismaService } from "src/prisma/prisma.service"
@@ -111,6 +110,13 @@ export class AuthService {
   }
 
   async register(createUserDto: CreateUserDto, req: Request): Promise<HttpException> {
+    const auth = await this.prisma.auth.findUnique({
+      where: { email: createUserDto.email },
+      select: { email: true },
+    })
+
+    if (auth?.email) throw new HttpException("Такой email уже занят", HttpStatus.BAD_REQUEST)
+
     const consents = await this.consentService.getConsents()
 
     for (const consent of consents) {
