@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common"
 import { BREAK_TYPE, Prisma, SLOT_STATUS, TimeSlot } from "@prisma/client"
-import { addMinutes, endOfDay } from "date-fns"
+import { addMinutes, endOfDay, hoursToMinutes } from "date-fns"
 import { ROLE_CONST } from "src/common/constants/user.constants"
 import { PrismaService } from "src/prisma/prisma.service"
 
@@ -60,8 +61,7 @@ export class ScheduleService {
     })
 
     const targetBreak = await this._getBreak(targetId)
-    const recurringBreaks = targetBreak.find((rec) => rec.isRecurring === true)
-    const absoluteBreaks = targetBreak.filter((rec) => rec.isRecurring === false)
+    const dailyRules = await this._getWorkRule(targetId)
 
     const targetSchedule = await this._getSchedule(targetId, dayOfWeek)
     if (!targetSchedule) return [] // В этот день врач не работает
@@ -78,8 +78,8 @@ export class ScheduleService {
 
     if (limitStart >= limitEnd) return [] // Врач и клиника не пересекаются по времени
 
-    const startOfDay = new Date(requestedDate.setHours(0, 0, 0, 0))
-    const endOfDay = new Date(requestedDate.setHours(23, 59, 59, 999))
+    const startOfDay = new Date(requestedDate.setUTCHours(0, 0, 0, 0))
+    const endOfDay = new Date(requestedDate.setUTCHours(23, 59, 59, 999))
 
     const busySlots = await this.prisma.timeSlot.findMany({
       where: {
@@ -103,15 +103,20 @@ export class ScheduleService {
 
       const isBusy = busyTimestamps.has(currentSlotTime.getTime())
 
-      // const isDuringBreak = absoluteBreaks.some(
-      //   (b) => currentSlotTime < b.endAt && nextSlotTime > b.startAt,
-      // )
+      const isDuringAbsolute = targetBreak.some((b) => {
+        if (!b.startAt || !b.endAt) return false
+        return currentSlotTime < b.endAt && nextSlotTime > b.startAt
+      })
 
-      // const isDuringRecurring = recurringBreaks.some((b) => {
-      //   return this._checkTimeOverlap(currentSlotTime, nextSlotTime, b.startTime, b.endTime)
-      // })
+      const currentMinutes = this._getSlotMinutes(currentSlotTime)
+      const isDuringRule = dailyRules.some((rule) => {
+        return (
+          currentMinutes >= this._timeToMinute(rule.startTime) &&
+          currentMinutes < this._timeToMinute(rule.endTime)
+        )
+      })
 
-      if (!isBusy) {
+      if (!isBusy && !isDuringAbsolute && !isDuringRule) {
         slotsToCreate.push({
           [`${roleKey}Id`]: targetId,
           clinicId: constraintId ?? null,
@@ -154,6 +159,14 @@ export class ScheduleService {
     })
   }
 
+  private async _getWorkRule(doctorId: string, tx?: Prisma.TransactionClient) {
+    const prisma = tx ?? this.prisma
+
+    return await prisma.workRule.findMany({
+      where: { doctorId },
+    })
+  }
+
   private async _getSchedule(targetId: string, dayOfWeek: number) {
     return await this.prisma.schedule.findFirst({
       where: {
@@ -180,5 +193,14 @@ export class ScheduleService {
     )
 
     return combined
+  }
+
+  private _timeToMinute(time: string) {
+    const minutes = time.split(":")
+    return hoursToMinutes(Number(minutes[0])) + Number(minutes[1])
+  }
+
+  private _getSlotMinutes(date: Date): number {
+    return date.getUTCHours() * 60 + date.getUTCMinutes()
   }
 }
