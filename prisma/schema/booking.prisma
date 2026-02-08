@@ -16,17 +16,26 @@ model Schedule {
 }
 
 model Break {
-    id          String     @id @default(uuid()) @db.Uuid
-    doctorId    String     @db.Uuid
-    type        BREAK_TYPE @default(LUNCH)
-    startAt     DateTime?
-    endAt       DateTime?
-    startTime   String?
-    endTime     String?
-    isRecurring Boolean    @default(false)
-    doctor      Doctor     @relation(fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    id       String     @id @default(uuid()) @db.Uuid
+    doctorId String     @db.Uuid
+    type     BREAK_TYPE @default(VACATION)
+    startAt  DateTime?
+    endAt    DateTime?
+    doctor   Doctor     @relation(fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
     @@map("breaks")
+    @@schema("booking")
+}
+
+model WorkRule {
+    id        String    @id @default(uuid()) @db.Uuid
+    doctorId  String    @db.Uuid
+    type      RULE_TYPE @default(LUNCH)
+    startTime String
+    endTime   String
+    doctor    Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("work_rules")
     @@schema("booking")
 }
 
@@ -50,10 +59,15 @@ model TimeSlot {
 }
 
 enum BREAK_TYPE {
-    LUNCH
     VACATION
     SICK_LEAVE
     OTHER
+
+    @@schema("booking")
+}
+
+enum RULE_TYPE {
+    LUNCH
 
     @@schema("booking")
 }
