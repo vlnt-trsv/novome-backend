@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common"
-import { BREAK_TYPE, Prisma, SLOT_STATUS, TimeSlot } from "@prisma/client"
-import { addMinutes, endOfDay, hoursToMinutes } from "date-fns"
+import { Cron, CronExpression } from "@nestjs/schedule"
+import { Prisma, SLOT_STATUS } from "@prisma/client"
+import { addMinutes, hoursToMinutes } from "date-fns"
 import { ROLE_CONST } from "src/common/constants/user.constants"
 import { PrismaService } from "src/prisma/prisma.service"
 
@@ -9,6 +9,12 @@ import { PrismaService } from "src/prisma/prisma.service"
 export class ScheduleService {
   private readonly logger = new Logger(ScheduleService.name)
   constructor(private prisma: PrismaService) {}
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async handleCron() {
+    this.logger.debug("Вызов cron - удаление неиспользуемых слотов")
+    await this.prisma.timeSlot.deleteMany({ where: { status: SLOT_STATUS.AVAILABLE } })
+  }
 
   async getSchedules(targetId: string, date?: Date) {
     return await this.prisma.$transaction(async (tx) => {

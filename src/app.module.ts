@@ -13,6 +13,7 @@ import { S3Module } from "./s3/s3.module"
 import { ProfileModule } from "./profile/profile.module"
 import { ConsentModule } from "./consent/consent.module"
 import { ScheduleModule } from "./schedule/schedule.module"
+import { AppointmentModule } from './appointment/appointment.module';
 
 @Module({
   providers: [EmailService, StaffService],
@@ -32,6 +33,7 @@ import { ScheduleModule } from "./schedule/schedule.module"
     ProfileModule,
     ConsentModule,
     ScheduleModule,
+    AppointmentModule,
   ],
 })
 export class AppModule {}
