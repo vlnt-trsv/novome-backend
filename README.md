@@ -92,7 +92,7 @@ Backend для медицинского приложения, разрабаты
 ### Catalog Service - Сервис каталога
 
 - [x] `GET /catalog` - Получить каталог
-- [ ] `GET /catalog/specializations` - Получить дерево специализаций (для меню и фильтров)
+- [x] `GET /catalog/specializations` - Получить дерево специализаций (для меню и фильтров)
 
 ### Rating Service - Сервис рейтинга
 
