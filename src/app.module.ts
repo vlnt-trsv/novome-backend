@@ -14,6 +14,7 @@ import { ProfileModule } from "./profile/profile.module"
 import { ConsentModule } from "./consent/consent.module"
 import { ScheduleModule } from "./schedule/schedule.module"
 import { AppointmentModule } from './appointment/appointment.module';
+import { CatalogModule } from './catalog/catalog.module';
 
 @Module({
   providers: [EmailService, StaffService],
@@ -34,6 +35,7 @@ import { AppointmentModule } from './appointment/appointment.module';
     ConsentModule,
     ScheduleModule,
     AppointmentModule,
+    CatalogModule,
   ],
 })
 export class AppModule {}
