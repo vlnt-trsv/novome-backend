@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { Clinic, Doctor, Prisma, ROLE, SPECIALIZATION } from "@prisma/client"
+import { getAllSpecializations } from "src/common/constants/doctor.constants"
 import { PrismaService } from "src/prisma/prisma.service"
 
 @Injectable()
@@ -30,7 +31,7 @@ export class CatalogService {
       if (Array.isArray(specializations) && specializations.length > 0) {
         filters.push({
           specializations: {
-            hasSome: specializations, // now guaranteed non-empty
+            hasSome: specializations,
           },
         })
       }
@@ -52,6 +53,10 @@ export class CatalogService {
         take,
       )
     }
+  }
+
+  getSpecializations() {
+    return getAllSpecializations()
   }
 
   private async _getDoctors(
