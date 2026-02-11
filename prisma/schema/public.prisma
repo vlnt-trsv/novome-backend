@@ -48,7 +48,7 @@ model Patient {
     // --- СВЯЗИ (RELATIONS) ---
     patientFavoriteDoctors PatientFavoriteDoctor[]
     patientFavoriteClinics PatientFavoriteClinic[]
-    // appointments        Appointment[]           
+    appointments           Appointment[]
     documents              Document[]
     // reviews             Review[]                
     user                   User                    @relation("Patient", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -86,8 +86,8 @@ model Doctor {
     // --- СВЯЗИ (RELATIONS) ---
     documents          Document[]
     favoriteByPatients PatientFavoriteDoctor[]
-    // appointments    Appointment[]
     // services        Service[]
+    appointments       Appointment[]
     schedules          Schedule[]
     timeSlots          TimeSlot[]
     workRules          WorkRule[]
@@ -128,6 +128,7 @@ model Clinic {
     // --- СВЯЗИ (RELATIONS) ---
     favoriteByPatients PatientFavoriteClinic[]
     // services        Service[]
+    appointments       Appointment[]
     documents          Document[]
     schedules          Schedule[]
     timeSlots          TimeSlot[]
