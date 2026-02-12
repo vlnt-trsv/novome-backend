@@ -129,8 +129,7 @@ Backend для медицинского приложения, разрабаты
 
 ### Services & Prices - Сервис медицинских услуг
 
-- [ ] `GET /services/doctor/:id` - Получить прайс-лист врача
-- [ ] `GET /services/clinic/:id` - Получить прайс-лист клиники
+- [ ] `GET /services` - Получить услуги
 - [ ] `POST /services` - Создать услугу
 - [ ] `PATCH /services/:id` - Обновить цену или описание услуги
 - [ ] `DELETE /services/:id` - Архивизация услуги
