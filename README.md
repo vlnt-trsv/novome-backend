@@ -129,10 +129,10 @@ Backend для медицинского приложения, разрабаты
 
 ### Services & Prices - Сервис медицинских услуг
 
-- [ ] `GET /services` - Получить услуги
-- [ ] `POST /services` - Создать услугу
-- [ ] `PATCH /services/:id` - Обновить цену или описание услуги
-- [ ] `DELETE /services/:id` - Архивизация услуги
+- [x] `GET /services` - Получить услуги
+- [x] `POST /services` - Создать услугу
+- [x] `PATCH /services/:id` - Обновить услуги
+- [x] `DELETE /services/:id` - Архивизация услуги
 
 ### Portfolio Service - Сервис портфолио врача (Кейсы до/после)
 
