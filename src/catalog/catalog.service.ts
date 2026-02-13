@@ -60,12 +60,14 @@ export class CatalogService {
   }
 
   private async _getDoctors(
-    where?: Prisma.DoctorWhereInput,
+    where: Prisma.DoctorWhereInput = {},
     skip?: number,
     take?: number,
   ): Promise<Doctor[]> {
     return await this.prisma.doctor.findMany({
-      where,
+      where: {
+        AND: [where, { isSearchable: true }],
+      },
       skip,
       take,
       include: {
@@ -79,6 +81,7 @@ export class CatalogService {
             role: true,
           },
         },
+        clinic: true,
       },
     })
   }
