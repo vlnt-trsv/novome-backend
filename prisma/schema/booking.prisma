@@ -10,6 +10,7 @@ model Appointment {
     notes      String?            @db.Text // заметки врача
     createdAt  DateTime           @default(now())
     updatedAt  DateTime           @updatedAt
+    serviceIds String[]           @db.Uuid
     patient    Patient            @relation(fields: [patientId], references: [id])
     doctor     Doctor             @relation(fields: [doctorId], references: [id])
     clinic     Clinic?            @relation(fields: [clinicId], references: [id])
@@ -65,7 +66,6 @@ model TimeSlot {
     startAt     DateTime
     endAt       DateTime
     status      SLOT_STATUS  @default(AVAILABLE)
-    // appointmentId String? @unique @db.Uuid
     createdAt   DateTime     @default(now())
     updatedAt   DateTime     @updatedAt
     doctor      Doctor?      @relation(fields: [doctorId], references: [id], onDelete: Cascade)

@@ -1,21 +1,15 @@
 model User {
-    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
     id           String        @id @default(uuid()) @db.Uuid
     email        String        @unique
     phone        String?       @unique
     role         ROLE
-    // --- ПРОФИЛЬ ---
     fullName     String
     avatar       String?
     language     String        @default("ru")
     timezone     String        @default("Asia/Novosibirsk")
-    // --- МАРКЕТИНГ И КОММУНИКАЦИИ ---
     leadSource   String? // Откуда пришел пользователь (для аналитики)
-    // consents   Consents
-    // --- СЛУЖЕБНЫЕ ПОЛЯ ---
     createdAt    DateTime      @default(now())
     updatedAt    DateTime      @updatedAt
-    // --- СВЯЗИ (RELATIONS) ---
     userConsents UserConsent[]
     moderation   Moderation?
     tickets      Ticket[]
@@ -23,7 +17,6 @@ model User {
     doctor       Doctor?       @relation("Doctor")
     clinic       Clinic?       @relation("Clinic")
     auth         Auth          @relation("UserAuth", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    // --- ЭКОСИСТЕМА И БАЛАНС ---
     aiToken      Int           @default(10)
 
     @@index([email, phone])
@@ -32,141 +25,130 @@ model User {
 }
 
 model Patient {
-    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
-    id                     String                  @unique @db.Uuid
-    // --- ЛИЧНЫЕ И ДЕМОГРАФИЧЕСКИЕ ДАННЫЕ ---
-    birthdate              DateTime?
-    gender                 GENDER?
-    // --- МЕДИЦИНСКИЙ ПРОФИЛЬ (Анамнез) ---
-    medicalNotes           String?                 @db.Text
-    bloodType              String? // Например: "A+", "B-"
-    allergies              String[]                @default([])
-    chronicDiseases        String?                 @db.Text
-    // --- СЛУЖЕБНЫЕ ПОЛЯ ---
-    createdAt              DateTime                @default(now())
-    updatedAt              DateTime                @updatedAt
-    // --- СВЯЗИ (RELATIONS) ---
-    patientFavoriteDoctors PatientFavoriteDoctor[]
-    patientFavoriteClinics PatientFavoriteClinic[]
-    appointments           Appointment[]
-    documents              Document[]
+    id              String        @unique @db.Uuid
+    birthdate       DateTime?
+    gender          GENDER?
+    medicalNotes    String?       @db.Text
+    bloodType       String? // Например: "A+", "B-"
+    allergies       String[]      @default([])
+    chronicDiseases String?       @db.Text
+    createdAt       DateTime      @default(now())
+    updatedAt       DateTime      @updatedAt
+    appointments    Appointment[]
+    favorites       Favorite[]
+    documents       Document[]
     // reviews             Review[]                
-    user                   User                    @relation("Patient", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    user            User          @relation("Patient", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
     @@map("patients")
     @@schema("public")
 }
 
 model Doctor {
-    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
-    id                 String                  @unique @db.Uuid
-    clinicId           String?                 @db.Uuid
-    // --- ЛИЧНЫЕ И ДЕМОГРАФИЧЕСКИЕ ДАННЫЕ ---
+    id                 String           @unique @db.Uuid
+    clinicId           String?          @db.Uuid
     gender             GENDER?
     birthdate          DateTime?
-    // --- ПРОФЕССИОНАЛЬНЫЙ БЛОК ---
     experience         Int
     specializations    SPECIALIZATION[]
     education          String
     workplace          String?
-    // --- ПОЛЯ ДЛЯ HIGHLOAD, ПОИСКА И SEO ---
-    bio                String?                 @db.Text
+    bio                String?          @db.Text
     // TODO: сначала создать сервис rating - rating Float @default(0.0) (кэшированное значение, чтобы не считайть каждый раз по 1000 отзывов) 
     // reviewsCount       Int @default(0)
-    // --- БИЗНЕС-ЛОГИКА И СТАТУСЫ ---
-    isActive           Boolean                 @default(true) // Работает ли врач в системе
-    isSearchable       Boolean                 @default(true) // Виден ли в поиске (скрываем, если в отпуске)
-    // consultationDuration Int                     @default(30)
-    // --- ЮРИДИЧЕСКИЙ БЛОК ---
-    inn                String                  @unique
-    license            String                  @unique
-    // --- СЛУЖЕБНЫЕ ПОЛЯ ---
-    createdAt          DateTime                @default(now())
-    updatedAt          DateTime                @updatedAt
-    // --- СВЯЗИ (RELATIONS) ---
-    documents          Document[]
-    favoriteByPatients PatientFavoriteDoctor[]
-    // services        Service[]
+    isActive           Boolean          @default(true) // Работает ли врач в системе
+    isSearchable       Boolean          @default(true) // Виден ли в поиске (скрываем, если в отпуске)
+    inn                String           @unique
+    license            String           @unique
+    createdAt          DateTime         @default(now())
+    updatedAt          DateTime         @updatedAt
     appointments       Appointment[]
+    documents          Document[]
+    favoriteByPatients Favorite[]
     schedules          Schedule[]
     timeSlots          TimeSlot[]
     workRules          WorkRule[]
+    services           Service[]
     breaks             Break[]
-    user               User                    @relation("Doctor", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    clinic             Clinic?                 @relation(fields: [clinicId], references: [id])
+    user               User             @relation("Doctor", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    clinic             Clinic?          @relation(fields: [clinicId], references: [id])
 
     @@map("doctors")
     @@schema("public")
 }
 
 model Clinic {
-    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
-    id                 String                  @unique @db.Uuid
-    // --- ЮРИДИЧЕСКИЙ БЛОК ---
+    id                 String        @unique @db.Uuid
     legalName          String
     brandName          String?
-    inn                String                  @unique
+    inn                String        @unique
     ogrn               String
     license            String
     directorName       String
     directorPosition   String
-    // --- ГЕОПОЗИЦИОНИРОВАНИЕ И КОНТАКТЫ ---
     legalAddress       String
     actualAddress      String
     city               String?
     phone              String?
     website            String?
-    // --- ПОЛЯ ДЛЯ HIGHLOAD И МАРКЕТИНГА ---
-    description        String?                 @db.Text
+    description        String?       @db.Text
     // rating             Float                   @default(0.0)
     // reviewsCount       Int                     @default(0)
-    // --- БИЗНЕС-ЛОГИКА И СТАТУСЫ ---
-    isActive           Boolean                 @default(true)
-    // --- СЛУЖЕБНЫЕ ПОЛЯ ---
-    createdAt          DateTime                @default(now())
-    updatedAt          DateTime                @updatedAt
-    // --- СВЯЗИ (RELATIONS) ---
-    favoriteByPatients PatientFavoriteClinic[]
-    // services        Service[]
+    isActive           Boolean       @default(true)
+    createdAt          DateTime      @default(now())
+    updatedAt          DateTime      @updatedAt
     appointments       Appointment[]
+    favoriteByPatients Favorite[]
     documents          Document[]
     schedules          Schedule[]
     timeSlots          TimeSlot[]
+    services           Service[]
     doctors            Doctor[]
-    user               User                    @relation("Clinic", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    user               User          @relation("Clinic", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
     @@index([city])
     @@map("clinics")
     @@schema("public")
 }
 
-model PatientFavoriteDoctor {
+model Favorite {
     id       String   @id @default(uuid()) @db.Uuid
     userId   String   @db.Uuid
-    doctorId String   @db.Uuid
+    doctorId String?  @db.Uuid
+    clinicId String?  @db.Uuid
     addedAt  DateTime @default(now())
     patient  Patient  @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    doctor   Doctor   @relation(fields: [doctorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    doctor   Doctor?  @relation(fields: [doctorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    clinic   Clinic?  @relation(fields: [clinicId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
     @@unique([userId, doctorId])
+    @@unique([userId, clinicId])
     @@index([userId])
     @@index([doctorId])
-    @@map("patient_favorite_doctors")
+    @@map("favorites")
     @@schema("public")
 }
 
-model PatientFavoriteClinic {
-    id       String   @id @default(uuid()) @db.Uuid
-    userId   String   @db.Uuid
-    clinicId String   @db.Uuid
-    addedAt  DateTime @default(now())
-    patient  Patient  @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    clinic   Clinic   @relation(fields: [clinicId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+model Service {
+    id             String           @id @default(uuid()) @db.Uuid
+    title          String
+    description    String?          @db.Text
+    specialization SPECIALIZATION
+    category       SERVICE_CATEGORY
+    price          Decimal?         @db.Decimal(10, 2)
+    isActive       Boolean          @default(true)
+    createdAt      DateTime         @default(now())
+    updatedAt      DateTime         @updatedAt
+    clinicId       String?          @db.Uuid
+    doctorId       String?          @db.Uuid
+    archive        ServiceArchive?
+    clinic         Clinic?          @relation(fields: [clinicId], references: [id])
+    doctor         Doctor?          @relation(fields: [doctorId], references: [id])
 
-    @@unique([userId, clinicId])
-    @@index([userId])
     @@index([clinicId])
-    @@map("patient_favorite_clinics")
+    @@index([doctorId])
+    @@index([specialization])
+    @@map("services")
     @@schema("public")
 }
 
@@ -181,6 +163,22 @@ enum ROLE {
 enum GENDER {
     MALE
     FEMALE
+
+    @@schema("public")
+}
+
+enum SERVICE_CATEGORY {
+    CONSULTATION // Консультации (первичные, повторные, онлайн)
+    DIAGNOSTICS // Диагностика (УЗИ, анализы перед операцией, 3D-моделирование)
+    SURGERY_FACE // Хирургия лица (рино, блефаро, фейслифт)
+    SURGERY_BODY // Хирургия тела (маммопластика, абдоминопластика)
+    SURGERY_RECONSTRUCTIVE // Реконструктивная и микрохирургия
+    COSMETOLOGY_INJECTABLE // Инъекционная косметология (филлеры, ботокс)
+    COSMETOLOGY_HARDWARE // Аппаратная косметология (лазер, SMAS)
+    AESTHETIC_MEDICINE // Эстетические процедуры (пилинги, уходы)
+    REHABILITATION // Реабилитация (послеоперационный уход, перевязки)
+    ANALYSIS // Лабораторные исследования
+    OTHER // Прочее
 
     @@schema("public")
 }
