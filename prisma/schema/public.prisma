@@ -141,6 +141,7 @@ model Service {
     updatedAt      DateTime         @updatedAt
     clinicId       String?          @db.Uuid
     doctorId       String?          @db.Uuid
+    archive        ServiceArchive?
     clinic         Clinic?          @relation(fields: [clinicId], references: [id])
     doctor         Doctor?          @relation(fields: [doctorId], references: [id])
 
