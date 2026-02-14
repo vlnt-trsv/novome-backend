@@ -96,8 +96,7 @@ Backend для медицинского приложения, разрабаты
 
 ### Rating Service - Сервис рейтинга
 
-- [ ] `POST /ratings/doctors/:id` - Поставить оценку врачу
-- [ ] `POST /ratings/clinics/:id` - Поставить оценку клинике
+- [x] `PATCH /ratings/:id` - Поставить оценку врачу или клинике
 
 ### Notifications Service - Сервис уведомлений
 
