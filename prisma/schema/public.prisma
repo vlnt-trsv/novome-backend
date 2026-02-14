@@ -34,6 +34,7 @@ model Patient {
     chronicDiseases String?       @db.Text
     createdAt       DateTime      @default(now())
     updatedAt       DateTime      @updatedAt
+    rating          Float         @default(0.0)
     appointments    Appointment[]
     favorites       Favorite[]
     documents       Document[]
@@ -54,7 +55,6 @@ model Doctor {
     education          String
     workplace          String?
     bio                String?          @db.Text
-    // TODO: сначала создать сервис rating - rating Float @default(0.0) (кэшированное значение, чтобы не считайть каждый раз по 1000 отзывов) 
     // reviewsCount       Int @default(0)
     isActive           Boolean          @default(true) // Работает ли врач в системе
     isSearchable       Boolean          @default(true) // Виден ли в поиске (скрываем, если в отпуске)
@@ -62,6 +62,7 @@ model Doctor {
     license            String           @unique
     createdAt          DateTime         @default(now())
     updatedAt          DateTime         @updatedAt
+    rating             Float            @default(0.0)
     appointments       Appointment[]
     documents          Document[]
     favoriteByPatients Favorite[]
@@ -92,11 +93,11 @@ model Clinic {
     phone              String?
     website            String?
     description        String?       @db.Text
-    // rating             Float                   @default(0.0)
     // reviewsCount       Int                     @default(0)
     isActive           Boolean       @default(true)
     createdAt          DateTime      @default(now())
     updatedAt          DateTime      @updatedAt
+    rating             Float         @default(0.0)
     appointments       Appointment[]
     favoriteByPatients Favorite[]
     documents          Document[]
@@ -147,8 +148,20 @@ model Service {
 
     @@index([clinicId])
     @@index([doctorId])
-    @@index([specialization])
+    @@index([clinicId, specialization])
     @@map("services")
+    @@schema("public")
+}
+
+model Rating {
+    patientId String   @unique @db.Uuid
+    value     Float    @default(0.0)
+    doctorId  String?  @db.Uuid
+    clinicId  String?  @db.Uuid
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("ratings")
     @@schema("public")
 }
 
