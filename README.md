@@ -96,8 +96,7 @@ Backend для медицинского приложения, разрабаты
 
 ### Rating Service - Сервис рейтинга
 
-- [ ] `POST /ratings/doctors/:id` - Поставить оценку врачу
-- [ ] `POST /ratings/clinics/:id` - Поставить оценку клинике
+- [x] `PATCH /ratings/:id` - Поставить оценку врачу или клинике
 
 ### Notifications Service - Сервис уведомлений
 
@@ -129,11 +128,10 @@ Backend для медицинского приложения, разрабаты
 
 ### Services & Prices - Сервис медицинских услуг
 
-- [ ] `GET /services/doctor/:id` - Получить прайс-лист врача
-- [ ] `GET /services/clinic/:id` - Получить прайс-лист клиники
-- [ ] `POST /services` - Создать услугу
-- [ ] `PATCH /services/:id` - Обновить цену или описание услуги
-- [ ] `DELETE /services/:id` - Архивизация услуги
+- [x] `GET /services` - Получить услуги
+- [x] `POST /services` - Создать услугу
+- [x] `PATCH /services/:id` - Обновить услуги
+- [x] `DELETE /services/:id` - Архивизация услуги
 
 ### Portfolio Service - Сервис портфолио врача (Кейсы до/после)
 

@@ -1,9 +1,7 @@
 model Staff {
-    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ --- 
     id        String       @id @default(uuid()) @db.Uuid
     email     String       @unique
     fullName  String
-    // --- СВЯЗИ (RELATIONS) ---
     moderated Moderation[]
     auth      Auth         @relation("StaffAuth", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -12,16 +10,13 @@ model Staff {
 }
 
 model Moderation {
-    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
     id          String            @id @default(uuid()) @db.Uuid
     userId      String            @unique @db.Uuid
     moderatorId String?           @db.Uuid
     status      MODERATION_STATUS @default(APPROVED)
     comment     String?           @db.Text
-    // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
     createdAt   DateTime          @default(now())
     updatedAt   DateTime          @updatedAt
-    // --- СВЯЗИ (RELATIONS) ---
     tickets     Ticket[]
     user        User              @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
     moderator   Staff?            @relation(fields: [moderatorId], references: [id])
@@ -33,17 +28,14 @@ model Moderation {
 }
 
 model Ticket {
-    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
     id           String          @id @default(uuid()) @db.Uuid
     userId       String          @db.Uuid
     moderationId String?         @db.Uuid
     subject      String
     status       TICKET_STATUS   @default(OPEN)
     messages     TicketMessage[]
-    // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
     createdAt    DateTime        @default(now())
     updatedAt    DateTime        @updatedAt
-    // --- СВЯЗИ (RELATIONS) ---
     user         User            @relation(fields: [userId], references: [id])
     moderation   Moderation?     @relation(fields: [moderationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -52,15 +44,12 @@ model Ticket {
 }
 
 model TicketMessage {
-    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
     id         String   @id @default(uuid()) @db.Uuid
     ticketId   String   @db.Uuid
     senderId   String   @db.Uuid
     text       String   @db.Text
     isInternal Boolean  @default(false)
-    // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
     createdAt  DateTime @default(now())
-    // --- СВЯЗИ (RELATIONS) ---
     ticket     Ticket   @relation(fields: [ticketId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
     @@map("ticket_messages")
@@ -68,7 +57,6 @@ model TicketMessage {
 }
 
 model Consent {
-    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
     id           String        @id @default(uuid()) @db.Uuid
     type         CONSENT_TYPE
     version      String
@@ -76,9 +64,7 @@ model Consent {
     text         String        @db.Text
     isRequired   Boolean       @default(true)
     isPublished  Boolean       @default(false)
-    // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
     createdAt    DateTime      @default(now())
-    // --- СВЯЗИ (RELATIONS) ---
     userConsents UserConsent[]
 
     @@unique([type, version])
@@ -87,15 +73,12 @@ model Consent {
 }
 
 model UserConsent {
-    // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
     id        String   @id @default(uuid()) @db.Uuid
     userId    String   @db.Uuid
     consentId String   @db.Uuid
     ipAddress String?
     userAgent String?
-    // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
     signedAt  DateTime @default(now())
-    // --- СВЯЗИ (RELATIONS) ---
     user      User     @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
     consent   Consent? @relation(fields: [consentId], references: [id])
 

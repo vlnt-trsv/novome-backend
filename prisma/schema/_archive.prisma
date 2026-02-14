@@ -1,0 +1,9 @@
+model ServiceArchive {
+    id         String   @unique @db.Uuid
+    reason     String?
+    archivedAt DateTime @default(now())
+    service    Service  @relation(fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    @@map("service_archive")
+    @@schema("archive")
+}
