@@ -100,10 +100,15 @@ Backend для медицинского приложения, разрабаты
 
 ### Notifications Service - Сервис уведомлений
 
-- [ ] `GET /notifications` - Получить уведомления
-- [ ] `POST /notifications/mark-all-read` - Пометить все уведомления, как прочитанные
-- [ ] `POST /notifications/:id/read` - Пометить уведомление, как прочитанное
-- [ ] `DELETE /notifications/:id` - Удалить уведомление
+- [x] `GET /notifications` - Получить уведомления
+- [x] `POST /notifications/mark-all-read` - Пометить все уведомления, как прочитанные
+- [x] `POST /notifications/:id/read` - Пометить уведомление, как прочитанное
+- [x] `DELETE /notifications/:id` - Удалить уведомление
+
+TODO:
+
+- [ ] Добавить системный слушатель (через GitHub Action настроить CICD, чтобы после релиза отправлялся запрос на эндпоинт system/webhooks/release)
+- [ ] Добавить слушатель для рейтинга (например, для доктора, через cron отсылать уведоление, какой сейчас рейтинг)
 
 ### Support Service - Сервис поддержки
 
