@@ -5,7 +5,7 @@ import { APPOINTMENT_NOTIFICATION_CONST } from "src/common/constants/appointment
 import { PrismaService } from "src/prisma/prisma.service"
 
 @Injectable()
-export class NotificationListener {
+export class AppointmentNotificationListener {
   constructor(private prisma: PrismaService) {}
 
   @OnEvent("appointment.status.changed", { async: true })
