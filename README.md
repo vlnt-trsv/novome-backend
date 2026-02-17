@@ -8,6 +8,8 @@ TODO:
 - [x] Добавить ACCESS GUARD на проверку доступности (подтверждёна ли почта)
 - [x] Добавить TYPE DECORATOR для размещения типа в класс
 - [x] Добавить TYPE GUARD на проверку типа (USER, STAFF)
+- [x] Добавить ROLE DECORATOR для размещения роли
+- [x] Добавить ROLE GUARD на проверку роли (PATIENT, DOCTOR, CLINIC)
 - [ ] Поддержка: Если у пользователя проблема с созданием профиля, он создает Ticket (например, модальное окно после входа, на странице ожидания ответа модерации). Тикет падает в Moderation.tickets.
 
 ---
@@ -100,10 +102,16 @@ Backend для медицинского приложения, разрабаты
 
 ### Notifications Service - Сервис уведомлений
 
-- [ ] `GET /notifications` - Получить уведомления
-- [ ] `POST /notifications/mark-all-read` - Пометить все уведомления, как прочитанные
-- [ ] `POST /notifications/:id/read` - Пометить уведомление, как прочитанное
-- [ ] `DELETE /notifications/:id` - Удалить уведомление
+- [x] `GET /notifications` - Получить уведомления
+- [x] `POST /notifications/mark-all-read` - Пометить все уведомления, как прочитанные
+- [x] `POST /notifications/:id/read` - Пометить уведомление, как прочитанное
+- [x] `DELETE /notifications/:id` - Удалить уведомление
+
+TODO:
+
+- [x] Добавить слушатель для связи между врачом и клиникой (когда клиника отправляет запрос врачу, то ему врачу приходит уведомление)
+- [ ] Добавить системный слушатель (через GitHub Action настроить CICD, чтобы после релиза отправлялся запрос на эндпоинт system/webhooks/release)
+- [ ] Добавить слушатель для рейтинга (например, для доктора, через cron отсылать уведоление, какой сейчас рейтинг)
 
 ### Support Service - Сервис поддержки
 
@@ -144,9 +152,10 @@ Backend для медицинского приложения, разрабаты
 
 ### Relationships Service - Сервис связи между врачом и клиникой
 
-- [ ] `POST /relationships/invite` - Клиника приглашает врача
-- [ ] `PATCH /relationships/:id/status` - Подтверждение связи
-- [ ] `DELETE /relationships/:id` - Уволнение/Удаление связи
+- [x] `GET /relationships` - Получить связь
+- [x] `POST /relationships/:doctorId/invite` - Клиника приглашает врача
+- [x] `POST /relationships/:id` - Подтверждение связи
+- [x] `DELETE /relationships/:id` - Уволнение/Удаление связи
 
 ### Dictionary Service - Сервис справочника
 

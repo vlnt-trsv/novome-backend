@@ -8,7 +8,7 @@ import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { ArchiveServiceDto } from "./dto/archive-service.dto"
 
 @Controller("services")
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class ServiceController {
   constructor(private serviceService: ServiceService) {}
 

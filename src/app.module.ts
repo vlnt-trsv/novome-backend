@@ -13,10 +13,13 @@ import { S3Module } from "./s3/s3.module"
 import { ProfileModule } from "./profile/profile.module"
 import { ConsentModule } from "./consent/consent.module"
 import { ScheduleModule } from "./schedule/schedule.module"
-import { AppointmentModule } from './appointment/appointment.module';
-import { CatalogModule } from './catalog/catalog.module';
-import { ServiceModule } from './service/service.module';
-import { RatingModule } from './rating/rating.module';
+import { AppointmentModule } from "./appointment/appointment.module"
+import { CatalogModule } from "./catalog/catalog.module"
+import { ServiceModule } from "./service/service.module"
+import { RatingModule } from "./rating/rating.module"
+import { NotificationModule } from "./notification/notification.module"
+import { EventEmitterModule } from "@nestjs/event-emitter"
+import { RelationshipsModule } from "./relationships/relationships.module"
 
 @Module({
   providers: [EmailService, StaffService],
@@ -25,6 +28,7 @@ import { RatingModule } from './rating/rating.module';
       isGlobal: true,
       envFilePath: ".env",
     }),
+    EventEmitterModule.forRoot(),
     NestScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
@@ -40,6 +44,8 @@ import { RatingModule } from './rating/rating.module';
     CatalogModule,
     ServiceModule,
     RatingModule,
+    NotificationModule,
+    RelationshipsModule,
   ],
 })
 export class AppModule {}

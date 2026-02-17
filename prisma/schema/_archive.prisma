@@ -7,3 +7,12 @@ model ServiceArchive {
     @@map("service_archive")
     @@schema("archive")
 }
+
+model RelationshipArchive {
+    id           String       @unique @db.Uuid
+    archivedAt   DateTime     @default(now())
+    relationship Relationship @relation(fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    @@map("relationship_archive")
+    @@schema("archive")
+}
