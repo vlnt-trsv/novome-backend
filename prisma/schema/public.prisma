@@ -48,7 +48,6 @@ model Patient {
 
 model Doctor {
     id                 String           @unique @db.Uuid
-    clinicId           String?          @db.Uuid
     gender             GENDER?
     birthdate          DateTime?
     experience         Int
@@ -64,6 +63,7 @@ model Doctor {
     createdAt          DateTime         @default(now())
     updatedAt          DateTime         @updatedAt
     rating             Float            @default(0.0)
+    relationships      Relationship[]
     appointments       Appointment[]
     documents          Document[]
     favoriteByPatients Favorite[]
@@ -73,17 +73,16 @@ model Doctor {
     services           Service[]
     breaks             Break[]
     user               User             @relation("Doctor", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    clinic             Clinic?          @relation(fields: [clinicId], references: [id])
 
     @@map("doctors")
     @@schema("public")
 }
 
 model Clinic {
-    id                 String        @unique @db.Uuid
+    id                 String         @unique @db.Uuid
     legalName          String
     brandName          String?
-    inn                String        @unique
+    inn                String         @unique
     ogrn               String
     license            String
     directorName       String
@@ -93,20 +92,20 @@ model Clinic {
     city               String?
     phone              String?
     website            String?
-    description        String?       @db.Text
+    description        String?        @db.Text
     // reviewsCount       Int                     @default(0)
-    isActive           Boolean       @default(true)
-    createdAt          DateTime      @default(now())
-    updatedAt          DateTime      @updatedAt
-    rating             Float         @default(0.0)
+    isActive           Boolean        @default(true)
+    createdAt          DateTime       @default(now())
+    updatedAt          DateTime       @updatedAt
+    rating             Float          @default(0.0)
+    relationships      Relationship[]
     appointments       Appointment[]
     favoriteByPatients Favorite[]
     documents          Document[]
     schedules          Schedule[]
     timeSlots          TimeSlot[]
     services           Service[]
-    doctors            Doctor[]
-    user               User          @relation("Clinic", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    user               User           @relation("Clinic", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
     @@index([city])
     @@map("clinics")
@@ -183,7 +182,33 @@ model Notification {
     @@schema("public")
 }
 
+model Relationship {
+    id        String               @id @default(uuid()) @db.Uuid
+    doctorId  String               @db.Uuid
+    clinicId  String               @db.Uuid
+    status    RELATIONSHIP_STATUS  @default(PENDING)
+    createdAt DateTime             @default(now())
+    updatedAt DateTime             @updatedAt
+    archive   RelationshipArchive?
+    clinic    Clinic               @relation(fields: [clinicId], references: [id])
+    doctor    Doctor               @relation(fields: [doctorId], references: [id])
+
+    @@unique([doctorId, clinicId])
+    @@map("relationships")
+    @@schema("public")
+}
+
+enum RELATIONSHIP_STATUS {
+    APPROVED
+    PENDING
+    REJECTED
+    ARCHIVED
+
+    @@schema("public")
+}
+
 enum NOTIFICATION_TYPE {
+    RELATIONSHIP_MESSAGE
     APPOINTMENT_MESSAGE
     SYSTEM_MESSAGE
 
