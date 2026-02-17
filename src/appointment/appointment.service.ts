@@ -22,7 +22,7 @@ export class AppointmentService {
     return await this.prisma.$transaction(async (tx) => {
       const doctor = await tx.doctor.findUnique({
         where: { id: doctorId },
-        select: { id: true, clinicId: true },
+        select: { id: true },
       })
       if (!doctor) {
         throw new HttpException(`Доктор с ID ${doctorId} не найден`, HttpStatus.NOT_FOUND)
@@ -49,7 +49,6 @@ export class AppointmentService {
         data: {
           patientId: user.id,
           doctorId: doctor?.id,
-          clinicId: doctor?.clinicId,
           timeSlotId: timeSlot?.id,
           reason: reason ?? null,
         },

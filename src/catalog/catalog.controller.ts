@@ -4,7 +4,7 @@ import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { CatalogQueryDto } from "./dto/catalog.dto"
 
 @Controller("catalog")
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class CatalogController {
   constructor(private catalogService: CatalogService) {}
 

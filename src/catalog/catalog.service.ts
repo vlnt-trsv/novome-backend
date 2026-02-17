@@ -81,7 +81,7 @@ export class CatalogService {
             role: true,
           },
         },
-        clinic: true,
+        relationships: true,
       },
     })
   }
