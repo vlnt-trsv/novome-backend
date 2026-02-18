@@ -35,11 +35,10 @@ model Patient {
     chronicDiseases String?       @db.Text
     createdAt       DateTime      @default(now())
     updatedAt       DateTime      @updatedAt
-    rating          Float         @default(0.0)
     appointments    Appointment[]
     favorites       Favorite[]
     documents       Document[]
-    // reviews             Review[]                
+    reviews         Review[]
     user            User          @relation("Patient", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
     @@map("patients")
@@ -55,7 +54,6 @@ model Doctor {
     education          String
     workplace          String?
     bio                String?          @db.Text
-    // reviewsCount       Int @default(0)
     isActive           Boolean          @default(true) // Работает ли врач в системе
     isSearchable       Boolean          @default(true) // Виден ли в поиске (скрываем, если в отпуске)
     inn                String           @unique
@@ -72,6 +70,7 @@ model Doctor {
     workRules          WorkRule[]
     services           Service[]
     breaks             Break[]
+    reviews            Review[]
     user               User             @relation("Doctor", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
     @@map("doctors")
@@ -93,7 +92,6 @@ model Clinic {
     phone              String?
     website            String?
     description        String?        @db.Text
-    // reviewsCount       Int                     @default(0)
     isActive           Boolean        @default(true)
     createdAt          DateTime       @default(now())
     updatedAt          DateTime       @updatedAt
@@ -105,6 +103,7 @@ model Clinic {
     schedules          Schedule[]
     timeSlots          TimeSlot[]
     services           Service[]
+    reviews            Review[]
     user               User           @relation("Clinic", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
     @@index([city])
@@ -154,13 +153,18 @@ model Service {
 }
 
 model Rating {
-    patientId String   @unique @db.Uuid
+    id        String   @id @default(uuid()) @db.Uuid
+    patientId String   @db.Uuid
     value     Float    @default(0.0)
     doctorId  String?  @db.Uuid
     clinicId  String?  @db.Uuid
+    reviewId  String?  @unique @db.Uuid
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    review    Review?  @relation(fields: [reviewId], references: [id])
 
+    @@unique([patientId, doctorId])
+    @@unique([patientId, clinicId])
     @@map("ratings")
     @@schema("public")
 }
@@ -196,6 +200,38 @@ model Relationship {
     @@unique([doctorId, clinicId])
     @@map("relationships")
     @@schema("public")
+}
+
+model Review {
+    id           String        @id @default(uuid()) @db.Uuid
+    patientId    String        @db.Uuid
+    doctorId     String?       @db.Uuid
+    clinicId     String?       @db.Uuid
+    moderationId String?       @db.Uuid
+    rating       Rating?
+    text         String        @db.Text
+    status       REVIEW_STATUS @default(PENDING)
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    clinic       Clinic?       @relation(fields: [clinicId], references: [id])
+    doctor       Doctor?       @relation(fields: [doctorId], references: [id])
+    patient      Patient       @relation(fields: [patientId], references: [id])
+    moderation   Moderation?   @relation(fields: [moderationId], references: [id])
+
+    @@index([patientId])
+    @@index([doctorId])
+    @@index([clinicId])
+    @@map("reviews")
+    @@schema("public")
+}
+
+enum REVIEW_STATUS {
+    APPROVED
+    PENDING
+    REJECTED
+    ARCHIVED
+
+    @@schema("moderation")
 }
 
 enum RELATIONSHIP_STATUS {

@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import { PrismaService } from "src/prisma/prisma.service"
 import { UpdateRatingDto } from "./dto/update-rating.dto"
+import { ROLE_CONST } from "src/common/constants/user.constants"
 
 @Injectable()
 export class RatingService {
@@ -13,55 +14,50 @@ export class RatingService {
       select: { id: true },
     })
 
-    const targetUser = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: targetId },
       select: { role: true },
     })
 
     if (!patient) throw new HttpException("Пациент не найден", HttpStatus.NOT_FOUND)
-    if (!targetUser) throw new HttpException("Таргет не найден", HttpStatus.NOT_FOUND)
+    if (!user) throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
 
-    const isDoctor = targetUser.role === "DOCTOR"
+    const roleKey = ROLE_CONST[user.role]
+
+    const whereCondition =
+      roleKey === "doctor"
+        ? { patientId_doctorId: { patientId: patient.id, doctorId: targetId } }
+        : { patientId_clinicId: { patientId: patient.id, clinicId: targetId } }
 
     return await this.prisma.$transaction(async (tx) => {
-      const whereRating = isDoctor
-        ? { patientId: patient.id, doctorId: targetId }
-        : { patientId: patient.id, clinicId: targetId }
-
-      const ratingData = {
-        value,
-        patientId: patient.id,
-        ...(isDoctor ? { doctorId: targetId } : { clinicId: targetId }),
-      }
-
       const savedRating = await tx.rating.upsert({
-        where: whereRating,
+        where: whereCondition,
         update: { value },
-        create: ratingData,
+        create: {
+          value,
+          patientId: patient.id,
+          [`${roleKey}Id`]: targetId,
+        },
       })
 
       const aggregations = await tx.rating.aggregate({
-        where: {
-          [isDoctor ? "doctorId" : "clinicId"]: targetId,
-        },
+        where: { [`${roleKey}Id`]: targetId },
         _avg: { value: true },
         _count: { value: true },
       })
 
-      const newAverageRating = aggregations._avg.value ?? 0
-
-      if (isDoctor) {
+      if (roleKey === "doctor") {
         await tx.doctor.update({
           where: { id: targetId },
           data: {
-            rating: newAverageRating,
+            rating: aggregations._avg.value ?? 0,
           },
         })
       } else {
         await tx.clinic.update({
           where: { id: targetId },
           data: {
-            rating: newAverageRating,
+            rating: aggregations._avg.value ?? 0,
           },
         })
       }

@@ -18,6 +18,7 @@ model Moderation {
     createdAt   DateTime          @default(now())
     updatedAt   DateTime          @updatedAt
     tickets     Ticket[]
+    reviews     Review[]
     user        User              @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
     moderator   Staff?            @relation(fields: [moderatorId], references: [id])
 
