@@ -1,12 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import {
-  Moderation,
   Prisma,
   Staff,
   Ticket,
   MODERATION_STATUS,
   Review,
   REVIEW_STATUS,
+  User,
 } from "@prisma/client"
 import { StaffWithRelations } from "src/common/types/user.types"
 import { PrismaService } from "src/prisma/prisma.service"
@@ -32,11 +32,11 @@ export class StaffService {
   }
 
   async getReviews(): Promise<Review[]> {
-    return await this.prisma.review.findMany({ where: { status: "PENDING" } })
+    return await this.prisma.review.findMany()
   }
 
-  async getModerations(): Promise<Moderation[]> {
-    return await this.prisma.moderation.findMany({ include: { moderator: true, user: true } })
+  async getUsers(): Promise<User[]> {
+    return await this.prisma.user.findMany()
   }
 
   async createStaff(createStaffDto: CreateStaffDto): Promise<Staff> {
@@ -64,8 +64,15 @@ export class StaffService {
     })
   }
 
-  async changeUserStatus(userId: string, status: MODERATION_STATUS): Promise<HttpException> {
-    await this.prisma.moderation.update({ where: { userId }, data: { status } })
+  async changeUserStatus(
+    userId: string,
+    status: MODERATION_STATUS,
+    comment?: string,
+  ): Promise<HttpException> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { status, moderationComment: comment },
+    })
     throw new HttpException(`Статус пользователя изменен на ${status}`, HttpStatus.OK)
   }
 

@@ -18,11 +18,11 @@ import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { FindUsersQueryDto } from "./dto/find-users-query.dto"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { ChangePasswordDto } from "./dto/change-password.dto"
-import { AccessGuard } from "src/auth/guards/access.guard"
 import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
+import { AccessGuard } from "src/auth/guards/access.guard"
 
 @Controller("users")
-@UseGuards(JwtAuthGuard, ConsentsRequiredGuard)
+@UseGuards(JwtAuthGuard, ConsentsRequiredGuard, AccessGuard)
 @SetMetadata("type", ["user"])
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -33,7 +33,6 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(AccessGuard)
   async getUsers(
     @Query() queryDto: FindUsersQueryDto,
   ): Promise<{ data: User[]; total: number; page: number; limit: number }> {
@@ -41,7 +40,6 @@ export class UserController {
   }
 
   @Get(":id")
-  @UseGuards(AccessGuard)
   async getUser(@Param("id") id: string): Promise<User | null> {
     return await this.userService.findOne({ id })
   }
@@ -52,19 +50,16 @@ export class UserController {
   }
 
   @Patch("change-password")
-  @UseGuards(AccessGuard)
   async changePassword(@CurrentUser() user: User, @Body() changePasswordDto: ChangePasswordDto) {
     return await this.userService.changePassword(user.id, changePasswordDto)
   }
 
   @Patch("me")
-  @UseGuards(AccessGuard)
   async updateUser(@CurrentUser() user: User, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return await this.userService.updateUser(user.id, updateUserDto)
   }
 
   @Delete(":id")
-  @UseGuards(AccessGuard)
   async deleteUser(@Param("id") id: string): Promise<User> {
     return await this.userService.deleteUser(id)
   }

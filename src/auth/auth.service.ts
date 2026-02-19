@@ -72,13 +72,9 @@ export class AuthService {
       )
     }
 
-    console.log(this.configService.get<number>("CONFIRMATION_EMAIL_TOKEN_EXPIRES_AT"))
-
     const confirmationToken = `${crypto.randomUUID()}-${new Date().getTime()}`
     const expiresIn = Number(this.configService.get<number>("CONFIRMATION_EMAIL_TOKEN_EXPIRES_AT"))
     const confirmationTokenExpiresAt = new Date(Date.now() + expiresIn)
-
-    console.log(confirmationTokenExpiresAt)
 
     const updatedAuth = await prisma.auth.update({
       where: { id: user.id },

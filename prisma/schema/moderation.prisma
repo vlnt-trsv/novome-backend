@@ -10,20 +10,14 @@ model Staff {
 }
 
 model Moderation {
-    id          String            @id @default(uuid()) @db.Uuid
-    userId      String            @unique @db.Uuid
-    moderatorId String?           @db.Uuid
-    status      MODERATION_STATUS @default(APPROVED)
-    comment     String?           @db.Text
-    createdAt   DateTime          @default(now())
-    updatedAt   DateTime          @updatedAt
+    id          String   @id @default(uuid()) @db.Uuid
+    moderatorId String?  @db.Uuid
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
     tickets     Ticket[]
     reviews     Review[]
-    user        User              @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    moderator   Staff?            @relation(fields: [moderatorId], references: [id])
+    moderator   Staff?   @relation(fields: [moderatorId], references: [id])
 
-    @@index([userId])
-    @@index([status])
     @@map("moderations")
     @@schema("moderation")
 }

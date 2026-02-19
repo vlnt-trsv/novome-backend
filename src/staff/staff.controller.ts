@@ -2,11 +2,12 @@ import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common"
 import { StaffService } from "./staff.service"
 import {
   AUTH_TYPE,
-  Moderation,
   Staff,
   Ticket,
   MODERATION_STATUS,
   REVIEW_STATUS,
+  User,
+  Review,
 } from "@prisma/client"
 import { CurrentStaff } from "src/common/decorators/current-staff.decorator"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
@@ -30,9 +31,14 @@ export class StaffController {
     return await this.staffService.getTickets()
   }
 
-  @Get("moderations")
-  async getModerations(): Promise<Moderation[]> {
-    return await this.staffService.getModerations()
+  @Get("reviews")
+  async getReviews(): Promise<Review[]> {
+    return await this.staffService.getReviews()
+  }
+
+  @Get("users")
+  async getUsers(): Promise<User[]> {
+    return await this.staffService.getUsers()
   }
 
   @Post("staff")
@@ -44,8 +50,9 @@ export class StaffController {
   async changeUserStatus(
     @Param("userId") userId: string,
     @Body("status") status: MODERATION_STATUS,
+    @Body("comment") comment?: string,
   ) {
-    return await this.staffService.changeUserStatus(userId, status)
+    return await this.staffService.changeUserStatus(userId, status, comment)
   }
 
   @Post("review/:reviewId")
