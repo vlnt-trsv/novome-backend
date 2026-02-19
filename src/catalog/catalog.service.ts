@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common"
 import { Clinic, Doctor, Prisma, ROLE, SPECIALIZATION } from "@prisma/client"
-import { getAllSpecializations } from "src/common/constants/doctor.constants"
 import { PrismaService } from "src/prisma/prisma.service"
 
 @Injectable()
@@ -53,10 +52,6 @@ export class CatalogService {
         take,
       )
     }
-  }
-
-  getSpecializations() {
-    return getAllSpecializations()
   }
 
   private async _getDoctors(

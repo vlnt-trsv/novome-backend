@@ -227,14 +227,3 @@ export const SPECIALIZATION_CONST = {
     },
   },
 } as const
-
-export const getAllSpecializations = () => {
-  return Object.entries(SPECIALIZATION_CONST).flatMap(([groupKey, group]) =>
-    Object.entries(group.items).map(([spec, info]) => ({
-      groupKey,
-      groupName: group.name,
-      specialization: spec as SPECIALIZATION,
-      ...info,
-    })),
-  )
-}

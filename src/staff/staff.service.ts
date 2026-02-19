@@ -8,7 +8,6 @@ import {
   REVIEW_STATUS,
   User,
 } from "@prisma/client"
-import { StaffWithRelations } from "src/common/types/user.types"
 import { PrismaService } from "src/prisma/prisma.service"
 import { CreateStaffDto } from "./dto/create-staff.dto"
 import { genSalt, hash } from "bcryptjs"
@@ -17,7 +16,7 @@ import { genSalt, hash } from "bcryptjs"
 export class StaffService {
   constructor(private prisma: PrismaService) {}
 
-  async findOne(where: Prisma.StaffWhereUniqueInput): Promise<StaffWithRelations | null> {
+  async findOne(where: Prisma.StaffWhereUniqueInput): Promise<Staff | null> {
     return this.prisma.staff.findUnique({
       where,
       include: {
