@@ -95,7 +95,7 @@ Backend для медицинского приложения, разрабаты
 ### Catalog Service - Сервис каталога
 
 - [x] `GET /catalog` - Получить каталог
-- [x] `GET /catalog/specializations` - Получить дерево специализаций (для меню и фильтров)
+<!-- - [x] `GET /catalog/specializations` - Получить дерево специализаций (для меню и фильтров) -->
 
 ### Rating Service - Сервис рейтинга
 
@@ -163,10 +163,13 @@ TODO:
 - [x] `POST /relationships/:id` - Подтверждение связи
 - [x] `DELETE /relationships/:id` - Уволнение/Удаление связи
 
-### Dictionary Service - Сервис справочника
+### Resources Service - Сервис справочника/ресурсов
 
-- [ ] `GET /dictionaries/cities` - Список городов присутствия
-- [ ] `GET /dictionaries/languages` - Языки приема
+- [ ] `GET /resources/cities` - Список городов присутствия
+- [ ] `GET /resources/languages` - Языки приема
+- [x] `GET /resources/specializations` - Дерево специализаций (для меню и фильтров)
+- [x] `GET /resources/services` - Категория услуг
+- [x] `GET /resources/statuses` - Статусы
 
 ### AI Visualization Service - Сервис AI визуализатора
 
