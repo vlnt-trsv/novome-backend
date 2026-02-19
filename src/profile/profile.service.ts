@@ -66,10 +66,12 @@ export class ProfileService {
         return await this.prisma.$transaction(async (tx): Promise<Doctor> => {
           const { birthdate, ...data } = profileData as DoctorDto
 
-          await tx.moderation.create({
+          await tx.user.update({
+            where: {
+              id: user.id,
+            },
             data: {
               status: "PENDING",
-              userId: user.id,
             },
           })
 
@@ -123,10 +125,12 @@ export class ProfileService {
         return await this.prisma.$transaction(async (tx): Promise<Clinic> => {
           const { ...data } = profileData as ClinicDto
 
-          await tx.moderation.create({
+          await tx.user.update({
+            where: {
+              id: user.id,
+            },
             data: {
               status: "PENDING",
-              userId: user.id,
             },
           })
 
