@@ -1,11 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
-import { Prisma, ROLE, User, MODERATION_STATUS } from "@prisma/client"
+import { Prisma, ROLE, User } from "@prisma/client"
 import { compare, genSalt, hash } from "bcryptjs"
 
 import { PrismaService } from "../prisma/prisma.service"
 import { CreateUserDto } from "./dto/create-user.dto"
 import { UpdateUserDto } from "./dto/update-user.dto"
-import { UserWithRelations } from "src/common/types/user.types"
 import { FindUsersQueryDto } from "./dto/find-users-query.dto"
 import { ChangePasswordDto } from "./dto/change-password.dto"
 import { ROLE_CONST } from "src/common/constants/user.constants"
@@ -14,7 +13,7 @@ import { ROLE_CONST } from "src/common/constants/user.constants"
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async findOne(where: Prisma.UserWhereUniqueInput): Promise<UserWithRelations | null> {
+  async findOne(where: Prisma.UserWhereUniqueInput): Promise<User | null> {
     const user = await this.prisma.user.findUnique({ where })
     if (!user) {
       throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
@@ -26,7 +25,6 @@ export class UserService {
         patient: user?.role === ROLE.PATIENT,
         doctor: user?.role === ROLE.DOCTOR,
         clinic: user?.role === ROLE.CLINIC,
-        moderation: user?.role === ROLE.DOCTOR || user?.role === ROLE.CLINIC,
         tickets: true,
         userConsents: true,
       },

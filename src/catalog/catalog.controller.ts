@@ -19,9 +19,4 @@ export class CatalogController {
       query.specializations,
     )
   }
-
-  @Get("specializations")
-  getSpecializations() {
-    return this.catalogService.getSpecializations()
-  }
 }
