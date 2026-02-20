@@ -1,13 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
-import {
-  Prisma,
-  Staff,
-  Ticket,
-  MODERATION_STATUS,
-  Review,
-  REVIEW_STATUS,
-  User,
-} from "@prisma/client"
+import { Prisma, Staff } from "@prisma/client"
 import { PrismaService } from "src/prisma/prisma.service"
 import { CreateStaffDto } from "./dto/create-staff.dto"
 import { genSalt, hash } from "bcryptjs"
@@ -26,18 +18,6 @@ export class StaffService {
     })
   }
 
-  async getTickets(): Promise<Ticket[]> {
-    return await this.prisma.ticket.findMany()
-  }
-
-  async getReviews(): Promise<Review[]> {
-    return await this.prisma.review.findMany()
-  }
-
-  async getUsers(): Promise<User[]> {
-    return await this.prisma.user.findMany()
-  }
-
   async createStaff(createStaffDto: CreateStaffDto): Promise<Staff> {
     const { fullName, password, email } = createStaffDto
     const auth = await this.prisma.auth.findUnique({ where: { email } })
@@ -47,39 +27,23 @@ export class StaffService {
     const salt = await genSalt(10)
     const hashedPassword = await hash(password, salt)
 
-    return await this.prisma.staff.create({
-      data: {
-        fullName,
-        email,
-        auth: {
-          create: {
-            email,
-            hashedPassword,
-            confirmed: true,
-            type: "STAFF",
+    return await this.prisma.$transaction(async (tx) => {
+      const staff = await tx.staff.create({
+        data: {
+          fullName,
+          email,
+          auth: {
+            create: {
+              email,
+              hashedPassword,
+              confirmed: true,
+              type: "STAFF",
+            },
           },
         },
-      },
+      })
+      await tx.moderation.create({ data: { moderator: { connect: { id: staff.id } } } })
+      return staff
     })
-  }
-
-  async changeUserStatus(
-    userId: string,
-    status: MODERATION_STATUS,
-    comment?: string,
-  ): Promise<HttpException> {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { status, moderationComment: comment },
-    })
-    throw new HttpException(`Статус пользователя изменен на ${status}`, HttpStatus.OK)
-  }
-
-  async changeReviewStatus(reviewId: string, status: REVIEW_STATUS): Promise<HttpException> {
-    await this.prisma.review.update({
-      where: { id: reviewId, status: "PENDING" },
-      data: { status },
-    })
-    throw new HttpException(`Статус отзыва изменен на ${status}`, HttpStatus.OK)
   }
 }
