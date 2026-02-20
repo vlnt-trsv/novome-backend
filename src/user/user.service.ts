@@ -18,7 +18,7 @@ export class UserService {
     if (!user) {
       throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
     }
-    return this.prisma.user.findUnique({
+    return await this.prisma.user.findUnique({
       where,
       include: {
         auth: { omit: { hashedPassword: true, hashedRt: true } },
@@ -129,7 +129,7 @@ export class UserService {
   }
 
   async deleteUser(id: string): Promise<User> {
-    return this.prisma.user.delete({
+    return await this.prisma.user.delete({
       where: { id },
     })
   }
