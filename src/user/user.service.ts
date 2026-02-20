@@ -27,6 +27,7 @@ export class UserService {
         clinic: user?.role === ROLE.CLINIC,
         tickets: true,
         userConsents: true,
+        notifications: true,
       },
     })
   }
