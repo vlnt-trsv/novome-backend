@@ -20,8 +20,8 @@ export class AppointmentController {
   }
 
   @Get(":id")
-  async getAppointment(@Param("id") id: string) {
-    return await this.appointmentService.getAppointment(id)
+  async getAppointment(@CurrentUser() user: User, @Param("id") id: string) {
+    return await this.appointmentService.getAppointment(user, id)
   }
 
   @Post()
