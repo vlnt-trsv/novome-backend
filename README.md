@@ -68,18 +68,20 @@ Backend для медицинского приложения, разрабаты
 
 - [x] `POST /users/:id/profile` - Создать профиль пользователя
 
-### Staff Service - Сервис модераторов
+### Staff Service - Сервис персонала
 
 - [x] `GET /staffs/me` - Получение собственного аккаунта модератора
-- [x] `GET /staffs/users` - Получение всех заявок на регистрацию пользователя (доктор, клиника)
-- [x] `GET /staffs/reviews` - Получение всех отзывов
-- [x] `GET /staffs/tickets` - Получение всех тикетов от пользователей
-- [x] `GET /staffs/tickets/:id` - Получение детали тикета от пользователя
-- [x] `GET /staffs/reviews/:id` - Получение детали отзыва от пользователя
 - [x] `POST /staffs` - Создание модератора
-- [x] `POST /staffs/users/:id` - Изменить статус пользователя
-- [ ] `POST /staffs/tickets/:id` - Ответить на тикет, изменить статус
-- [x] `POST /staffs/reviews/:id` - Модерация отзыва (опубликовать/скрыть/удалить)
+
+### Moderation Service - Сервис модерации
+
+- [x] `GET /moderation/users` - Получение всех заявок на регистрацию пользователя (доктор, клиника)
+- [x] `GET /moderation/reviews` - Получение всех отзывов
+- [x] `GET /moderation/tickets` - Получение всех тикетов от пользователей
+- [x] `POST /moderation/users/:id` - Изменить статус пользователя
+- [x] `POST /moderation/reviews/:id` - Модерация отзыва (опубликовать/скрыть/удалить)
+- [x] `POST /moderation/tickets/:id` - Изменить статус тикета
+- [x] `POST /moderation/tickets/:id/reply` - Ответить на тикет
 
 ### Schedules Service - Сервис расписания врача или клиники
 
@@ -121,11 +123,11 @@ TODO:
 
 ### Support Service - Сервис поддержки
 
-- [ ] `GET /support/tickets` - Получить тикеты
-- [ ] `GET /support/tickets/:id` - Получить информацию о тиките
-- [ ] `POST /support/tickets` - Создать тикет
-- [ ] `POST /support/tickets/:id/replies` - Ответить сообщение в тикете
-- [ ] `POST /support/tickets/:id/close` - Закрыть тикет (пользователь сам закрыл проблему)
+- [x] `GET /support/tickets` - Получить тикеты
+- [x] `GET /support/tickets/:id` - Получить информацию о тиките
+- [x] `POST /support/tickets` - Создать тикет
+- [x] `POST /support/tickets/:id/reply` - Ответить сообщение в тикете
+- [x] `POST /support/tickets/:id/close` - Закрыть тикет (пользователь сам закрыл проблему)
 
 ### Files Service - Сервис файлов
 
