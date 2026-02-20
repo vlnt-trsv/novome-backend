@@ -30,10 +30,11 @@ export class ProfileService {
     createProfileDto: CreateProfileDto,
     files: Express.Multer.File[],
   ): Promise<Patient | Doctor | Clinic> {
-    const roleKey = ROLE_CONST[user.role]
+    const { id, role } = user
+    const roleKey = ROLE_CONST[role]
     const profileData = createProfileDto[roleKey]
     const isProfileCreated = await this.prisma.user.findMany({
-      where: { id: user.id },
+      where: { id },
       select: { [roleKey]: { include: { _count: true } } },
     })
 
@@ -45,18 +46,18 @@ export class ProfileService {
       throw new HttpException(`Данные ${roleKey} не предоставлены`, HttpStatus.BAD_REQUEST)
     }
 
-    if (user.role === ROLE.PATIENT) {
+    if (role === ROLE.PATIENT) {
       const { birthdate, ...data } = profileData as PatientDto
       return this.prisma.patient.create({
         data: {
-          id: user.id,
+          id,
           birthdate: birthdate ? new Date(birthdate) : undefined,
           ...data,
         },
       })
     }
 
-    if (user.role === ROLE.DOCTOR) {
+    if (role === ROLE.DOCTOR) {
       let filesData: UploadedFileResult[] = []
       try {
         if (files && files.length > 0) {
@@ -67,9 +68,7 @@ export class ProfileService {
           const { birthdate, ...data } = profileData as DoctorDto
 
           await tx.user.update({
-            where: {
-              id: user.id,
-            },
+            where: { id },
             data: {
               status: "PENDING",
             },
@@ -77,14 +76,14 @@ export class ProfileService {
 
           const profile = await tx.doctor.create({
             data: {
-              id: user.id,
+              id,
               birthdate: birthdate ? new Date(birthdate) : null,
               ...data,
             },
           })
 
           for (const res of filesData) {
-            const dbFile = await tx.file.create({
+            const { id: fileId } = await tx.file.create({
               data: {
                 originalName: res.originalName,
                 mimeType: res.mimeType,
@@ -96,7 +95,7 @@ export class ProfileService {
 
             await tx.document.create({
               data: {
-                id: dbFile.id,
+                id: fileId,
                 doctorId: profile.id,
               },
             })
@@ -115,7 +114,7 @@ export class ProfileService {
       }
     }
 
-    if (user.role === ROLE.CLINIC) {
+    if (role === ROLE.CLINIC) {
       let filesData: UploadedFileResult[] = []
       try {
         if (files && files.length > 0) {
@@ -142,7 +141,7 @@ export class ProfileService {
           })
 
           for (const res of filesData) {
-            const dbFile = await tx.file.create({
+            const { id: fileId } = await tx.file.create({
               data: {
                 originalName: res.originalName,
                 mimeType: res.mimeType,
@@ -154,7 +153,7 @@ export class ProfileService {
 
             await tx.document.create({
               data: {
-                id: dbFile.id,
+                id: fileId,
                 clinicId: profile.id,
               },
             })

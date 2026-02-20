@@ -15,7 +15,7 @@ export class AppointmentNotificationListener {
 
     return await this.prisma.notification.create({
       data: {
-        userId,
+        user: { connect: { id: userId } },
         type: meta.type,
         title: meta.title,
         description: meta.description,

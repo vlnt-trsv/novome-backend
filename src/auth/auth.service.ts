@@ -52,10 +52,11 @@ export class AuthService {
   }
 
   async sendConfirmationEmail(user: User, tx?: Prisma.TransactionClient) {
+    const { id: userId, email } = user
     const prisma = tx ?? this.prisma
 
     const auth = await prisma.auth.findUnique({
-      where: { id: user.id },
+      where: { id: userId },
       select: { confirmationTokenExpiresAt: true, confirmationSentAt: true },
     })
 
@@ -77,7 +78,7 @@ export class AuthService {
     const confirmationTokenExpiresAt = new Date(Date.now() + expiresIn)
 
     const updatedAuth = await prisma.auth.update({
-      where: { id: user.id },
+      where: { id: userId },
       data: {
         confirmationToken,
         confirmationTokenExpiresAt,
@@ -85,7 +86,7 @@ export class AuthService {
       },
     })
 
-    await this.emailService.sendConfirmationEmail(user.email, confirmationToken)
+    await this.emailService.sendConfirmationEmail(email, confirmationToken)
     return {
       confirmationSentAt: updatedAuth.confirmationSentAt,
       confirmationTokenExpiresAt: updatedAuth.confirmationTokenExpiresAt,
@@ -106,8 +107,9 @@ export class AuthService {
   }
 
   async register(createUserDto: CreateUserDto, req: Request): Promise<HttpException> {
+    const { acceptedConsentIds, email } = createUserDto
     const auth = await this.prisma.auth.findUnique({
-      where: { email: createUserDto.email },
+      where: { email: email },
       select: { email: true },
     })
 
@@ -116,7 +118,7 @@ export class AuthService {
     const consents = await this.consentService.getConsents()
 
     for (const consent of consents) {
-      if (!createUserDto.acceptedConsentIds.includes(consent.id) && consent.isRequired)
+      if (!acceptedConsentIds.includes(consent.id) && consent.isRequired)
         throw new HttpException(
           "Необходимо принять обязательные соглашения",
           HttpStatus.BAD_REQUEST,
@@ -126,7 +128,7 @@ export class AuthService {
     await this.prisma.$transaction(
       async (tx) => {
         const user = await this.userService.createUser(createUserDto, tx)
-        await this.consentService.signConsents(createUserDto.acceptedConsentIds, user.id, req, tx)
+        await this.consentService.signConsents(acceptedConsentIds, user.id, req, tx)
         await this.sendConfirmationEmail(user, tx)
       },
       { timeout: 10000 },
