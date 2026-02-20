@@ -21,7 +21,7 @@ import { NotificationModule } from "./notification/notification.module"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { RelationshipsModule } from "./relationships/relationships.module"
 import { ReviewsModule } from "./reviews/reviews.module"
-import { ResourcesModule } from './resources/resources.module';
+import { ResourcesModule } from "./resources/resources.module"
 
 @Module({
   providers: [EmailService, StaffService],
