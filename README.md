@@ -131,9 +131,10 @@ TODO:
 
 ### Files Service - Сервис файлов
 
-- [ ] `GET /files/:id` - Получить файл
+- [x] `POST /files/document/download` - Скачать документ
+- [x] `POST /files/documents/upload` - Загрузить документы 
 - [x] `POST /files/avatar` - Поставить фото в профиль
-- [ ] `DELETE /files/:id` - Удалить файл
+- [x] `DELETE /files/:id` - Удалить файл
 
 ### Consent Service - Сервис политики
 
