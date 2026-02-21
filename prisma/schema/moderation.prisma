@@ -10,19 +10,14 @@ model Staff {
 }
 
 model Moderation {
-    id          String            @id @default(uuid()) @db.Uuid
-    userId      String            @unique @db.Uuid
-    moderatorId String?           @db.Uuid
-    status      MODERATION_STATUS @default(APPROVED)
-    comment     String?           @db.Text
-    createdAt   DateTime          @default(now())
-    updatedAt   DateTime          @updatedAt
+    id          String   @id @default(uuid()) @db.Uuid
+    moderatorId String?  @db.Uuid @unique
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
     tickets     Ticket[]
-    user        User              @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    moderator   Staff?            @relation(fields: [moderatorId], references: [id])
+    reviews     Review[]
+    moderator   Staff?   @relation(fields: [moderatorId], references: [id])
 
-    @@index([userId])
-    @@index([status])
     @@map("moderations")
     @@schema("moderation")
 }
@@ -31,7 +26,7 @@ model Ticket {
     id           String          @id @default(uuid()) @db.Uuid
     userId       String          @db.Uuid
     moderationId String?         @db.Uuid
-    subject      String
+    title        String
     status       TICKET_STATUS   @default(OPEN)
     messages     TicketMessage[]
     createdAt    DateTime        @default(now())
@@ -44,13 +39,12 @@ model Ticket {
 }
 
 model TicketMessage {
-    id         String   @id @default(uuid()) @db.Uuid
-    ticketId   String   @db.Uuid
-    senderId   String   @db.Uuid
-    text       String   @db.Text
-    isInternal Boolean  @default(false)
-    createdAt  DateTime @default(now())
-    ticket     Ticket   @relation(fields: [ticketId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    id        String   @id @default(uuid()) @db.Uuid
+    ticketId  String   @db.Uuid
+    senderId  String   @db.Uuid
+    text      String   @db.Text
+    createdAt DateTime @default(now())
+    ticket    Ticket   @relation(fields: [ticketId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
     @@map("ticket_messages")
     @@schema("moderation")

@@ -68,17 +68,20 @@ Backend для медицинского приложения, разрабаты
 
 - [x] `POST /users/:id/profile` - Создать профиль пользователя
 
-### Staff Service - Сервис модераторов
+### Staff Service - Сервис персонала
 
 - [x] `GET /staffs/me` - Получение собственного аккаунта модератора
-- [x] `GET /staffs/tickets` - Получение всех тикетов от пользователей
-- [x] `GET /staffs/tickets/:id` - Получение детали тикета от пользователя
-- [x] `GET /staffs/reviews/:id` - Получение детали отзыва от пользователя
-- [x] `GET /staffs/moderations` - Получение всех заявок на регистрацию пользователя (доктор, клиника)
 - [x] `POST /staffs` - Создание модератора
-- [x] `POST /staffs/users/:id` - Изменить статус пользователя
-- [ ] `POST /staffs/tickets/:id` - Ответить на тикет, изменить статус
-- [ ] `POST /staffs/reviews/:id` - Модерация отзыва (опубликовать/скрыть/удалить)
+
+### Moderation Service - Сервис модерации
+
+- [x] `GET /moderation/users` - Получение всех заявок на регистрацию пользователя (доктор, клиника)
+- [x] `GET /moderation/reviews` - Получение всех отзывов
+- [x] `GET /moderation/tickets` - Получение всех тикетов от пользователей
+- [x] `POST /moderation/users/:id` - Изменить статус пользователя
+- [x] `POST /moderation/reviews/:id` - Модерация отзыва (опубликовать/скрыть/удалить)
+- [x] `POST /moderation/tickets/:id` - Изменить статус тикета
+- [x] `POST /moderation/tickets/:id/reply` - Ответить на тикет
 
 ### Schedules Service - Сервис расписания врача или клиники
 
@@ -94,11 +97,16 @@ Backend для медицинского приложения, разрабаты
 ### Catalog Service - Сервис каталога
 
 - [x] `GET /catalog` - Получить каталог
-- [x] `GET /catalog/specializations` - Получить дерево специализаций (для меню и фильтров)
+<!-- - [x] `GET /catalog/specializations` - Получить дерево специализаций (для меню и фильтров) -->
 
 ### Rating Service - Сервис рейтинга
 
 - [x] `PATCH /ratings/:id` - Поставить оценку врачу или клинике
+
+### Reviews Service - Сервис отзывов
+
+- [x] `GET /reviews` - Получить список отзывов
+- [x] `POST /reviews` - Отправить отзыв (Отзыв отправляет только пациент)
 
 ### Notifications Service - Сервис уведомлений
 
@@ -115,11 +123,11 @@ TODO:
 
 ### Support Service - Сервис поддержки
 
-- [ ] `GET /support/tickets` - Получить тикеты
-- [ ] `GET /support/tickets/:id` - Получить информацию о тиките
-- [ ] `POST /support/tickets` - Создать тикет
-- [ ] `POST /support/tickets/:id/replies` - Ответить сообщение в тикете
-- [ ] `POST /support/tickets/:id/close` - Закрыть тикет (пользователь сам закрыл проблему)
+- [x] `GET /support/tickets` - Получить тикеты
+- [x] `GET /support/tickets/:id` - Получить информацию о тиките
+- [x] `POST /support/tickets` - Создать тикет
+- [x] `POST /support/tickets/:id/reply` - Ответить сообщение в тикете
+- [x] `POST /support/tickets/:id/close` - Закрыть тикет (пользователь сам закрыл проблему)
 
 ### Files Service - Сервис файлов
 
@@ -157,10 +165,13 @@ TODO:
 - [x] `POST /relationships/:id` - Подтверждение связи
 - [x] `DELETE /relationships/:id` - Уволнение/Удаление связи
 
-### Dictionary Service - Сервис справочника
+### Resources Service - Сервис справочника/ресурсов
 
-- [ ] `GET /dictionaries/cities` - Список городов присутствия
-- [ ] `GET /dictionaries/languages` - Языки приема
+- [ ] `GET /resources/cities` - Список городов присутствия
+- [ ] `GET /resources/languages` - Языки приема
+- [x] `GET /resources/specializations` - Дерево специализаций (для меню и фильтров)
+- [x] `GET /resources/services` - Категория услуг
+- [x] `GET /resources/statuses` - Статусы
 
 ### AI Visualization Service - Сервис AI визуализатора
 

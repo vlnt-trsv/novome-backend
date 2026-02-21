@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
-import { Moderation, Prisma, Staff, Ticket, MODERATION_STATUS } from "@prisma/client"
-import { StaffWithRelations } from "src/common/types/user.types"
+import { Prisma, Staff } from "@prisma/client"
 import { PrismaService } from "src/prisma/prisma.service"
 import { CreateStaffDto } from "./dto/create-staff.dto"
 import { genSalt, hash } from "bcryptjs"
@@ -9,7 +8,7 @@ import { genSalt, hash } from "bcryptjs"
 export class StaffService {
   constructor(private prisma: PrismaService) {}
 
-  async findOne(where: Prisma.StaffWhereUniqueInput): Promise<StaffWithRelations | null> {
+  async findOne(where: Prisma.StaffWhereUniqueInput): Promise<Staff | null> {
     return this.prisma.staff.findUnique({
       where,
       include: {
@@ -17,14 +16,6 @@ export class StaffService {
         moderated: true,
       },
     })
-  }
-
-  async getTickets(): Promise<Ticket[]> {
-    return await this.prisma.ticket.findMany()
-  }
-
-  async getModerations(): Promise<Moderation[]> {
-    return await this.prisma.moderation.findMany({ include: { moderator: true, user: true } })
   }
 
   async createStaff(createStaffDto: CreateStaffDto): Promise<Staff> {
@@ -36,24 +27,23 @@ export class StaffService {
     const salt = await genSalt(10)
     const hashedPassword = await hash(password, salt)
 
-    return await this.prisma.staff.create({
-      data: {
-        fullName,
-        email,
-        auth: {
-          create: {
-            email,
-            hashedPassword,
-            confirmed: true,
-            type: "STAFF",
+    return await this.prisma.$transaction(async (tx) => {
+      const staff = await tx.staff.create({
+        data: {
+          fullName,
+          email,
+          auth: {
+            create: {
+              email,
+              hashedPassword,
+              confirmed: true,
+              type: "STAFF",
+            },
           },
         },
-      },
+      })
+      await tx.moderation.create({ data: { moderator: { connect: { id: staff.id } } } })
+      return staff
     })
-  }
-
-  async changeUserStatus(userId: string, status: MODERATION_STATUS): Promise<HttpException> {
-    await this.prisma.moderation.update({ where: { userId }, data: { status } })
-    throw new HttpException(`Статус пользователя изменен на ${status}`, HttpStatus.OK)
   }
 }

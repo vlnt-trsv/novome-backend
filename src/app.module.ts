@@ -20,6 +20,10 @@ import { RatingModule } from "./rating/rating.module"
 import { NotificationModule } from "./notification/notification.module"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { RelationshipsModule } from "./relationships/relationships.module"
+import { ReviewsModule } from "./reviews/reviews.module"
+import { ResourcesModule } from "./resources/resources.module"
+import { SupportModule } from './support/support.module';
+import { ModerationModule } from './moderation/moderation.module';
 
 @Module({
   providers: [EmailService, StaffService],
@@ -46,6 +50,10 @@ import { RelationshipsModule } from "./relationships/relationships.module"
     RatingModule,
     NotificationModule,
     RelationshipsModule,
+    ReviewsModule,
+    ResourcesModule,
+    SupportModule,
+    ModerationModule,
   ],
 })
 export class AppModule {}

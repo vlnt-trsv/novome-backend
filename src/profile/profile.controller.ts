@@ -1,5 +1,4 @@
 import { Body, Controller, Post, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common"
-import { AccessGuard } from "src/auth/guards/access.guard"
 import { CreateProfileDto } from "./dto/create-profile.dto"
 import { Clinic, Doctor, Patient, User } from "@prisma/client"
 import { ProfileService } from "./profile.service"
@@ -15,7 +14,6 @@ export class ProfileController {
   constructor(private profileService: ProfileService) {}
 
   @Post()
-  @UseGuards(AccessGuard)
   @UseInterceptors(FilesInterceptor("documents"))
   async createProfile(
     @CurrentUser() user: User,
