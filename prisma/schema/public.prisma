@@ -39,7 +39,7 @@ model Patient {
     updatedAt       DateTime      @updatedAt
     appointments    Appointment[]
     favorites       Favorite[]
-    documents       Document[]
+    documents       File[]
     reviews         Review[]
     user            User          @relation("Patient", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -65,7 +65,7 @@ model Doctor {
     rating             Float            @default(0.0)
     relationships      Relationship[]
     appointments       Appointment[]
-    documents          Document[]
+    documents          File[]
     favoriteByPatients Favorite[]
     schedules          Schedule[]
     timeSlots          TimeSlot[]
@@ -101,7 +101,7 @@ model Clinic {
     relationships      Relationship[]
     appointments       Appointment[]
     favoriteByPatients Favorite[]
-    documents          Document[]
+    documents          File[]
     schedules          Schedule[]
     timeSlots          TimeSlot[]
     services           Service[]
