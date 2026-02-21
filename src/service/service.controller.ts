@@ -8,10 +8,11 @@ import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { ArchiveServiceDto } from "./dto/archive-service.dto"
 import { Role } from "src/user/decorator/role.decorator"
 import { RoleGuard } from "src/user/guard/role.guard"
+import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
 
 @Controller("services")
 @Role(ROLE.DOCTOR, ROLE.CLINIC)
-@UseGuards(JwtAuthGuard, RoleGuard)
+@UseGuards(JwtAuthGuard, RoleGuard, ConsentsRequiredGuard)
 export class ServiceController {
   constructor(private serviceService: ServiceService) {}
 

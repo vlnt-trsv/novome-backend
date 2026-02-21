@@ -5,9 +5,10 @@ import { Ticket, TicketMessage, User } from "@prisma/client"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { CreateTicketDto } from "./dto/create-ticket.dto"
 import { ReplyTicketDto } from "./dto/reply-ticket.dto"
+import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
 
 @Controller("support")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ConsentsRequiredGuard)
 export class SupportController {
   constructor(private supportService: SupportService) {}
 
