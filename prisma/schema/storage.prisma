@@ -1,46 +1,18 @@
 model File {
-  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
-  id           String    @id @default(uuid()) @db.Uuid
+  id           String   @id @default(uuid()) @db.Uuid
+  patientId    String?  @db.Uuid
+  doctorId     String?  @db.Uuid
+  clinicId     String?  @db.Uuid
   originalName String
   mimeType     String
   size         Int
-  s3Key        String    @unique
+  s3Key        String   @unique
   url          String
-  // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
-  createdAt    DateTime  @default(now())
-  // --- СВЯЗИ (RELATIONS) ---
-  documents    Document? @relation("Documents")
+  createdAt    DateTime @default(now())
+  patient      Patient? @relation(fields: [patientId], references: [id])
+  doctor       Doctor?  @relation(fields: [doctorId], references: [id])
+  clinic       Clinic?  @relation(fields: [clinicId], references: [id])
 
   @@map("files")
   @@schema("storage")
 }
-
-model Document {
-  // --- СИСТЕМНЫЕ ИДЕНТИФИКАТОРЫ ---
-  id        String   @unique @db.Uuid
-  // type      DOCUMENT_TYPE
-  patientId String?  @db.Uuid
-  doctorId  String?  @db.Uuid
-  clinicId  String?  @db.Uuid
-  // --- СЛУЖЕБНЫЕ ПОЛЯ --- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  // --- СВЯЗИ (RELATIONS) ---
-  patient   Patient? @relation(fields: [patientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  doctor    Doctor?  @relation(fields: [doctorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  clinic    Clinic?  @relation(fields: [clinicId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  file      File     @relation("Documents", fields: [id], references: [id], onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("documents")
-  @@schema("storage")
-}
-
-// enum DOCUMENT_TYPE {
-//   LICENSE
-//   DIPLOMA
-//   CERTIFICATE
-//   PASSPORT
-//   OTHER
-
-//   @@schema("storage")
-// }

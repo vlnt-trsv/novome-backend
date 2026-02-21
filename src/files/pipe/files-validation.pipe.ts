@@ -1,25 +1,13 @@
-import { HttpException, HttpStatus, Inject, Injectable, PipeTransform } from "@nestjs/common"
+import { HttpException, HttpStatus, Injectable, PipeTransform } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { REQUEST } from "@nestjs/core"
-import { ROLE, User } from "@prisma/client"
-import { Request } from "express"
 
 @Injectable()
 export class FilesValidationPipe implements PipeTransform {
-  constructor(
-    private readonly configService: ConfigService,
-    @Inject(REQUEST) private request: Request,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
   transform(files: Express.Multer.File[]) {
-    const user = this.request.user as User
-
-    if (user?.role === ROLE.PATIENT) {
-      return files
-    }
-
-    const maxSize = this.configService.get<number>("MAX_FILE_SIZE") || 0
-    const allowedTypes = this.configService.get<string>("FILE_TYPE") || ""
+    const maxSize = this.configService.get<number>("MAX_FILE_SIZE") ?? 0
+    const allowedTypes = this.configService.get<string>("FILE_TYPE") ?? ""
     const typeRegex = new RegExp(allowedTypes)
 
     if (!files || files.length === 0) {

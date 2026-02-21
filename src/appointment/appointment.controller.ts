@@ -5,9 +5,10 @@ import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { APPOINTMENT_STATUS, User } from "@prisma/client"
 import { CreateAppointmentDto } from "./dto/create-appointment.dto"
 import { EventEmitter2 } from "@nestjs/event-emitter"
+import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
 
 @Controller("appointments")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ConsentsRequiredGuard)
 export class AppointmentController {
   constructor(
     private appointmentService: AppointmentService,

@@ -2,9 +2,10 @@ import { Controller, Get, HttpException, HttpStatus, Query, UseGuards } from "@n
 import { CatalogService } from "./catalog.service"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { CatalogQueryDto } from "./dto/catalog.dto"
+import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
 
 @Controller("catalog")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ConsentsRequiredGuard)
 export class CatalogController {
   constructor(private catalogService: CatalogService) {}
 

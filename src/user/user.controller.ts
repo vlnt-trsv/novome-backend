@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from "@nestjs/common"
 import { UserService } from "./user.service"
-import { User } from "@prisma/client"
+import { AUTH_TYPE, User } from "@prisma/client"
 import { CreateUserDto } from "./dto/create-user.dto"
 import { UpdateUserDto } from "./dto/update-user.dto"
 import { CurrentUser } from "src/common/decorators/current-user.decorator"
@@ -20,10 +20,12 @@ import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { ChangePasswordDto } from "./dto/change-password.dto"
 import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
 import { AccessGuard } from "src/auth/guards/access.guard"
+import { Type } from "src/auth/decorators/type.decorator"
+import { TypeGuard } from "src/auth/guards/type.guard"
 
 @Controller("users")
-@UseGuards(JwtAuthGuard, ConsentsRequiredGuard, AccessGuard)
-@SetMetadata("type", ["user"])
+@Type(AUTH_TYPE.USER)
+@UseGuards(JwtAuthGuard, TypeGuard, AccessGuard, ConsentsRequiredGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -33,6 +35,8 @@ export class UserController {
   }
 
   @Get()
+  @Type(AUTH_TYPE.STAFF)
+  @UseGuards(TypeGuard)
   async getUsers(
     @Query() queryDto: FindUsersQueryDto,
   ): Promise<{ data: User[]; total: number; page: number; limit: number }> {
@@ -45,6 +49,8 @@ export class UserController {
   }
 
   @Post("user")
+  @Type(AUTH_TYPE.STAFF)
+  @UseGuards(TypeGuard)
   async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
     return await this.userService.createUser(createUserDto)
   }
@@ -60,7 +66,7 @@ export class UserController {
   }
 
   @Delete(":id")
-  async deleteUser(@Param("id") id: string): Promise<User> {
-    return await this.userService.deleteUser(id)
+  async deleteUser(@CurrentUser() user: User) {
+    return await this.userService.deleteUser(user.id)
   }
 }

@@ -9,14 +9,6 @@ import { DoctorDto } from "./dto/doctor.dto"
 import { ClinicDto } from "./dto/clinic.dto"
 import { ScheduleService } from "src/schedule/schedule.service"
 
-interface UploadedFileResult {
-  key: string
-  url: string
-  originalName: string
-  mimeType: string
-  size: number
-}
-
 @Injectable()
 export class ProfileService {
   constructor(
@@ -58,118 +50,58 @@ export class ProfileService {
     }
 
     if (role === ROLE.DOCTOR) {
-      let filesData: UploadedFileResult[] = []
-      try {
-        if (files && files.length > 0) {
-          filesData = await this.fileService.processFiles(files, user)
-        }
+      return await this.prisma.$transaction(async (tx): Promise<Doctor> => {
+        const { birthdate, ...data } = profileData as DoctorDto
 
-        return await this.prisma.$transaction(async (tx): Promise<Doctor> => {
-          const { birthdate, ...data } = profileData as DoctorDto
-
-          await tx.user.update({
-            where: { id },
-            data: {
-              status: "PENDING",
-            },
-          })
-
-          const profile = await tx.doctor.create({
-            data: {
-              id,
-              birthdate: birthdate ? new Date(birthdate) : null,
-              ...data,
-            },
-          })
-
-          for (const res of filesData) {
-            const { id: fileId } = await tx.file.create({
-              data: {
-                originalName: res.originalName,
-                mimeType: res.mimeType,
-                s3Key: res.key,
-                size: res.size,
-                url: res.url,
-              },
-            })
-
-            await tx.document.create({
-              data: {
-                id: fileId,
-                doctorId: profile.id,
-              },
-            })
-          }
-
-          await this.scheduleService.createDefaultSchedule(profile.id, tx)
-
-          return profile
+        await tx.user.update({
+          where: { id },
+          data: {
+            status: "PENDING",
+          },
         })
-      } catch (error) {
-        if (filesData.length > 0) {
-          const keys = filesData.map((r: UploadedFileResult) => r.key)
-          await this.fileService.deleteMany(keys)
-        }
-        throw error
-      }
+
+        const profile = await tx.doctor.create({
+          data: {
+            id,
+            birthdate: birthdate ? new Date(birthdate) : null,
+            ...data,
+          },
+        })
+
+        await this.fileService.uploadFiles(files, user, tx)
+
+        await this.scheduleService.createDefaultSchedule(profile.id, tx)
+
+        return profile
+      })
     }
 
     if (role === ROLE.CLINIC) {
-      let filesData: UploadedFileResult[] = []
-      try {
-        if (files && files.length > 0) {
-          filesData = await this.fileService.processFiles(files, user)
-        }
+      return await this.prisma.$transaction(async (tx): Promise<Clinic> => {
+        const { ...data } = profileData as ClinicDto
 
-        return await this.prisma.$transaction(async (tx): Promise<Clinic> => {
-          const { ...data } = profileData as ClinicDto
-
-          await tx.user.update({
-            where: {
-              id: user.id,
-            },
-            data: {
-              status: "PENDING",
-            },
-          })
-
-          const profile = await tx.clinic.create({
-            data: {
-              id: user.id,
-              ...data,
-            },
-          })
-
-          for (const res of filesData) {
-            const { id: fileId } = await tx.file.create({
-              data: {
-                originalName: res.originalName,
-                mimeType: res.mimeType,
-                s3Key: res.key,
-                size: res.size,
-                url: res.url,
-              },
-            })
-
-            await tx.document.create({
-              data: {
-                id: fileId,
-                clinicId: profile.id,
-              },
-            })
-          }
-
-          await this.scheduleService.createDefaultSchedule(profile.id, tx)
-
-          return profile
+        await tx.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            status: "PENDING",
+          },
         })
-      } catch (error) {
-        if (filesData.length > 0) {
-          const keys = filesData.map((r: UploadedFileResult) => r.key)
-          await this.fileService.deleteMany(keys)
-        }
-        throw error
-      }
+
+        const profile = await tx.clinic.create({
+          data: {
+            id: user.id,
+            ...data,
+          },
+        })
+
+        await this.fileService.uploadFiles(files, user, tx)
+
+        await this.scheduleService.createDefaultSchedule(profile.id, tx)
+
+        return profile
+      })
     }
 
     throw new HttpException("Недопустимая роль", HttpStatus.BAD_REQUEST)
