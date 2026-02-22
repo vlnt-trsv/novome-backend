@@ -1,0 +1,88 @@
+import { SPECIALIZATION_CONST } from "./doctor.constants"
+
+export const ZONES_CONST = {
+  nose: {
+    title: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.RHINOPLASTY.title,
+    description: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.RHINOPLASTY.description,
+    category: "face",
+    specialization: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.RHINOPLASTY,
+    photoTip: "Сфотографируйте лицо в профиль при хорошем освещении",
+  },
+  lips: {
+    title: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.CHEILOPLASTY.title,
+    description: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.CHEILOPLASTY.description,
+    category: "face",
+    specialization: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.CHEILOPLASTY,
+    photoTip: "Сфотографируйте лицо анфас, губы расслаблены",
+  },
+  eyes: {
+    title: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.BLEPHAROPLASTY.title,
+    description: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.BLEPHAROPLASTY.description,
+    category: "face",
+    specialization: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.BLEPHAROPLASTY,
+    photoTip: "Сфотографируйте лицо анфас с открытыми глазами",
+  },
+  chin: {
+    title: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.MENTOPLASTY.title,
+    description: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.MENTOPLASTY.description,
+    category: "face",
+    specialization: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.MENTOPLASTY,
+    photoTip: "Сфотографируйте лицо в профиль",
+  },
+  cheeks: {
+    title: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.MALARPLASTY.title,
+    description: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.MALARPLASTY.description,
+    category: "face",
+    specialization: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.MALARPLASTY,
+    photoTip: "Сфотографируйте лицо анфас или в три четверти",
+  },
+  forehead: {
+    title: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.FRONTLIFTING.title,
+    description: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.FRONTLIFTING.description,
+    category: "face",
+    specialization: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.FRONTLIFTING,
+    photoTip: "Сфотографируйте лицо анфас, волосы убраны назад",
+  },
+  ears: {
+    title: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.OTOPLASTY.title,
+    description: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.OTOPLASTY.description,
+    category: "face",
+    specialization: SPECIALIZATION_CONST.FACIAL_AESTHETIC_SURGERY.items.OTOPLASTY,
+    photoTip: "Сфотографируйте лицо анфас, волосы убраны за уши",
+  },
+  breast: {
+    title: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.MAMMOPLASTY.title,
+    description: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.MAMMOPLASTY.description,
+    category: "body",
+    specialization: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.MAMMOPLASTY,
+    photoTip: "Сфотографируйте торс анфас в нижнем белье",
+  },
+  abdomen: {
+    title: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.ABDOMINOPLASTY.title,
+    description: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.ABDOMINOPLASTY.description,
+    category: "body",
+    specialization: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.ABDOMINOPLASTY,
+    photoTip: "Сфотографируйте торс анфас и в профиль",
+  },
+  buttocks: {
+    title: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.GLUTEOPLASTY.title,
+    description: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.GLUTEOPLASTY.description,
+    category: "body",
+    specialization: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.GLUTEOPLASTY,
+    photoTip: "Сфотографируйте фигуру сзади и в профиль",
+  },
+  thighs: {
+    title: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.LIPOSUCTION.title,
+    description: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.LIPOSUCTION.description,
+    category: "body",
+    specialization: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.LIPOSUCTION,
+    photoTip: "Сфотографируйте ноги анфас и сзади",
+  },
+  arms: {
+    title: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.BRACHIOPLASTY.title,
+    description: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.BRACHIOPLASTY.description,
+    category: "body",
+    specialization: SPECIALIZATION_CONST.BODY_AESTHETIC_SURGERY.items.BRACHIOPLASTY,
+    photoTip: "Сфотографируйте руки поднятыми в стороны",
+  },
+} as const
