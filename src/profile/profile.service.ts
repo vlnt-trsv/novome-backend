@@ -68,7 +68,7 @@ export class ProfileService {
           },
         })
 
-        await this.fileService.uploadFiles(files, user, tx)
+        await this.fileService.uploadFiles(files, "DOCUMENT", user, tx)
 
         await this.scheduleService.createDefaultSchedule(profile.id, tx)
 
@@ -96,7 +96,7 @@ export class ProfileService {
           },
         })
 
-        await this.fileService.uploadFiles(files, user, tx)
+        await this.fileService.uploadFiles(files, "DOCUMENT", user, tx)
 
         await this.scheduleService.createDefaultSchedule(profile.id, tx)
 
