@@ -6,9 +6,10 @@ import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { Role } from "src/user/decorator/role.decorator"
 import { RoleGuard } from "src/user/guard/role.guard"
 import { CreateReviewDto } from "./dto/create-review.dto"
+import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
 
 @Controller("reviews")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ConsentsRequiredGuard)
 export class ReviewsController {
   constructor(private reviewsService: ReviewsService) {}
 

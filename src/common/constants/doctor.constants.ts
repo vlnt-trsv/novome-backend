@@ -8,6 +8,10 @@ export const SPECIALIZATION_CONST = {
         title: "Ринопластика",
         description: "Пластика носа для изменения формы, размера или исправления дефектов",
       },
+      [SPECIALIZATION.CHEILOPLASTY]: {
+        title: "Хейлопластика",
+        description: "Пластика губ для изменения формы, объёмов или контуров губ",
+      },
       [SPECIALIZATION.BLEPHAROPLASTY]: {
         title: "Блефаропластика",
         description: "Пластика век для устранения избытка кожи и жировых грыж",
@@ -16,25 +20,21 @@ export const SPECIALIZATION_CONST = {
         title: "Фейслифтинг",
         description: "Подтяжка лица для устранения возрастных изменений и морщин",
       },
-      [SPECIALIZATION.FOREHEAD_LIFT]: {
+      [SPECIALIZATION.FRONTLIFTING]: {
         title: "Подтяжка лба",
         description: "Коррекция морщин на лбу и поднятие бровей",
       },
-      [SPECIALIZATION.CHEEK_AUGMENTATION]: {
+      [SPECIALIZATION.MALARPLASTY]: {
         title: "Увеличение скул",
         description: "Коррекция формы и объёма скул имплантами или филлерами",
       },
-      [SPECIALIZATION.CHIN_AUGMENTATION]: {
+      [SPECIALIZATION.MENTOPLASTY]: {
         title: "Увеличение подбородка",
         description: "Коррекция формы и размера подбородка для гармонии лица",
       },
       [SPECIALIZATION.OTOPLASTY]: {
         title: "Отопластика",
         description: "Пластика ушей для коррекции формы и устранения лопоухости",
-      },
-      [SPECIALIZATION.LIP_AUGMENTATION]: {
-        title: "Увеличение губ",
-        description: "Коррекция объёма и формы губ филлерами или имплантами",
       },
       [SPECIALIZATION.NECK_LIFT]: {
         title: "Подтяжка шеи",
@@ -50,18 +50,6 @@ export const SPECIALIZATION_CONST = {
         title: "Маммопластика",
         description: "Комплексная пластика груди любой направленности",
       },
-      [SPECIALIZATION.BREAST_AUGMENTATION]: {
-        title: "Увеличение груди",
-        description: "Аугментация молочных желез имплантами или липофилингом",
-      },
-      [SPECIALIZATION.BREAST_REDUCTION]: {
-        title: "Уменьшение груди",
-        description: "Редукция молочных желез при гипермастии",
-      },
-      [SPECIALIZATION.BREAST_LIFT]: {
-        title: "Подтяжка груди",
-        description: "Мастопексия для коррекции птоза (опущения) груди",
-      },
       [SPECIALIZATION.LIPOSUCTION]: {
         title: "Липосакция",
         description: "Удаление избыточного жира из проблемных зон",
@@ -70,21 +58,13 @@ export const SPECIALIZATION_CONST = {
         title: "Абдоминопластика",
         description: "Пластика живота с удалением избытка кожи и подтяжкой мышц",
       },
-      [SPECIALIZATION.BUTTOCK_AUGMENTATION]: {
-        title: "Увеличение ягодиц",
+      [SPECIALIZATION.GLUTEOPLASTY]: {
+        title: "Глютеопластика",
         description: "Глютеопластика имплантами или липофилингом",
       },
-      [SPECIALIZATION.BUTTOCK_LIFT]: {
-        title: "Подтяжка ягодиц",
-        description: "Коррекция формы и упругости ягодиц",
-      },
-      [SPECIALIZATION.THIGH_LIFT]: {
-        title: "Подтяжка бёдер",
-        description: "Устранение избытка кожи на внутренней поверхности бёдер",
-      },
-      [SPECIALIZATION.ARM_LIFT]: {
-        title: "Подтяжка рук",
-        description: "Брахиопластика для коррекции дряблости кожи рук",
+      [SPECIALIZATION.BRACHIOPLASTY]: {
+        title: "Брахиопластика",
+        description: "Глютеопластика имплантами или липофилингом",
       },
     },
   },

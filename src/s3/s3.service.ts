@@ -1,37 +1,41 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import {
   DeleteObjectCommand,
-  DeleteObjectsCommand,
+  GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { PrismaService } from "src/prisma/prisma.service"
 
 @Injectable()
 export class S3Service {
   private readonly _s3Client: S3Client
-  constructor(
-    private configService: ConfigService,
-    private prisma: PrismaService,
-  ) {
+  constructor(private configService: ConfigService) {
     this._s3Client = new S3Client({
       region: this.configService.get<string>("S3_REGION"),
       endpoint: this.configService.get<string>("S3_ENDPOINT"),
       credentials: {
-        accessKeyId: this.configService.get<string>("S3_ACCESS_KEY") || "",
-        secretAccessKey: this.configService.get<string>("S3_SECRET_KEY") || "",
+        accessKeyId: this.configService.get<string>("S3_ACCESS_KEY") ?? "",
+        secretAccessKey: this.configService.get<string>("S3_SECRET_KEY") ?? "",
       },
-    } as any)
+    })
   }
 
-  // async get(fileId: string)
+  async generatePresignedUrl(key: string, expiresIn = 3600): Promise<string> {
+    const bucketName = this.configService.get<string>(`S3_BUCKET_PRIVATE_NAME`)
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+    })
 
-  async upload(file: Express.Multer.File, key: string) {
+    return await getSignedUrl(this._s3Client, command, { expiresIn })
+  }
+
+  async upload(file: Express.Multer.File, key: string, type: "PUBLIC" | "PRIVATE") {
     if (!file) throw new HttpException("Файлы не указан", HttpStatus.BAD_REQUEST)
 
-    const bucketName = this.configService.get<string>("S3_BUCKET_NAME")
+    const bucketName = this.configService.get<string>(`S3_BUCKET_${type}_NAME`)
     const endpoint = this.configService.get<string>("S3_ENDPOINT")
 
     const { buffer, mimetype } = file
@@ -50,31 +54,12 @@ export class S3Service {
     }
   }
 
-  async delete(key: string) {
-    const bucketName = this.configService.get<string>("S3_BUCKET_NAME")
+  async delete(key: string, type: "PUBLIC" | "PRIVATE") {
+    const bucketName = this.configService.get<string>(`S3_BUCKET_${type}_NAME`)
     const command = new DeleteObjectCommand({
       Bucket: bucketName,
       Key: key,
     })
     await this._s3Client.send(command)
   }
-
-  async deleteMany(keys: string[]) {
-    if (keys.length === 0) return
-
-    const command = new DeleteObjectsCommand({
-      Bucket: this.configService.get("S3_BUCKET_NAME"),
-      Delete: {
-        Objects: keys.map((key) => ({ Key: key })),
-        Quiet: true,
-      },
-    })
-
-    return await this._s3Client.send(command)
-  }
-
-  // async uploadManyFiles(files: Express.Multer.File[], userId: string) {
-  //   const uploadPromises = files.map((file) => this.uploadFile(file, userId))
-  //   return await Promise.all(uploadPromises)
-  // }
 }

@@ -22,8 +22,9 @@ import { EventEmitterModule } from "@nestjs/event-emitter"
 import { RelationshipsModule } from "./relationships/relationships.module"
 import { ReviewsModule } from "./reviews/reviews.module"
 import { ResourcesModule } from "./resources/resources.module"
-import { SupportModule } from './support/support.module';
-import { ModerationModule } from './moderation/moderation.module';
+import { SupportModule } from "./support/support.module"
+import { ModerationModule } from "./moderation/moderation.module"
+import { AiModule } from "./ai/ai.module"
 
 @Module({
   providers: [EmailService, StaffService],
@@ -54,6 +55,7 @@ import { ModerationModule } from './moderation/moderation.module';
     ResourcesModule,
     SupportModule,
     ModerationModule,
+    AiModule,
   ],
 })
 export class AppModule {}
