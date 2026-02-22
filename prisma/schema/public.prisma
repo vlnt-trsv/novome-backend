@@ -289,24 +289,19 @@ enum SPECIALIZATION {
     RHINOPLASTY // Ринопластика (пластика носа)
     BLEPHAROPLASTY // Блефаропластика (пластика век)
     FACELIFT // Фейслифтинг (подтяжка лица)
-    FOREHEAD_LIFT // Подтяжка лба
-    CHEEK_AUGMENTATION // Увеличение скул
-    CHIN_AUGMENTATION // Увеличение подбородка
+    FRONTLIFTING // Подтяжка лба
+    MALARPLASTY // Увеличение скул
+    MENTOPLASTY // Увеличение подбородка
     OTOPLASTY // Отопластика (пластика ушей)
-    LIP_AUGMENTATION // Увеличение губ
+    CHEILOPLASTY // Увеличение губ
     NECK_LIFT // Подтяжка шеи
 
     // Эстетическая хирургия тела
     MAMMOPLASTY // Маммопластика (пластика груди)
-    BREAST_AUGMENTATION // Увеличение груди
-    BREAST_REDUCTION // Уменьшение груди
-    BREAST_LIFT // Подтяжка груди
     LIPOSUCTION // Липосакция
     ABDOMINOPLASTY // Абдоминопластика (пластика живота)
-    BUTTOCK_AUGMENTATION // Увеличение ягодиц
-    BUTTOCK_LIFT // Подтяжка ягодиц
-    THIGH_LIFT // Подтяжка бедер
-    ARM_LIFT // Подтяжка рук
+    GLUTEOPLASTY // Увеличение ягодиц
+    BRACHIOPLASTY // Подтяжка кожи рук
 
     // Реконструктивная хирургия
     BURN_RECONSTRUCTION // Реконструкция после ожогов
