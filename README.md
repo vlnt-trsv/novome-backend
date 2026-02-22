@@ -131,9 +131,9 @@ TODO:
 
 ### Files Service - Сервис файлов
 
-- [x] `POST /files/document/download` - Скачать документ
-- [x] `POST /files/documents/upload` - Загрузить документы 
-- [x] `POST /files/avatar` - Поставить фото в профиль
+- [x] `GET /files` - Получить свои файлы (PresignedURL - 1h)
+- [x] `POST /files` - Загрузить файлы
+- [x] `POST /files/avatar` - Загрузить фото в профиль
 - [x] `DELETE /files/:id` - Удалить файл
 
 ### Consent Service - Сервис политики
@@ -176,7 +176,6 @@ TODO:
 
 ### AI Visualization Service - Сервис AI визуализатора
 
-- [ ] `GET /ai/visualizations` - История генераций
-- [ ] `GET /ai/visualizations/:id` - Результат конкретной генерации
-- [ ] `POST /ai/visualize` - Запуск процесса
-- [ ] `DELETE /ai/visualizations/:id` - Удаление результатата из истории
+- [x] `GET /ai` - История генераций
+- [x] `POST /ai` - Запуск процесса
+- [x] `DELETE /ai/:id` - Удаление результатата из истории
