@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Post,
   UploadedFile,
   UploadedFiles,
@@ -12,8 +13,8 @@ import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express"
 import { FilesService } from "./files.service"
 import { CurrentUser } from "src/common/decorators/current-user.decorator"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
-import { User } from "@prisma/client"
-import { AvatarValidationPipe } from "./pipe/avatar-validation.pipe"
+import { FILE_TYPE, User } from "@prisma/client"
+import { FileValidationPipe } from "./pipe/file-validation.pipe"
 import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
 import { FilesValidationPipe } from "./pipe/files-validation.pipe"
 
@@ -22,31 +23,32 @@ import { FilesValidationPipe } from "./pipe/files-validation.pipe"
 export class FilesController {
   constructor(private filesServies: FilesService) {}
 
-  @Post("download")
-  async downloadFile(@Body("key") key: string) {
-    return await this.filesServies.downloadFile(key)
+  @Get()
+  async getFile(@CurrentUser() user: User) {
+    return await this.filesServies.getFiles(user)
   }
 
-  @Post("upload")
+  @Post()
   @UseInterceptors(FilesInterceptor("files"))
   async uploadFiles(
     @CurrentUser() user: User,
+    @Body("type") type: FILE_TYPE,
     @UploadedFiles(FilesValidationPipe) files: Express.Multer.File[],
   ) {
-    return await this.filesServies.uploadFiles(files, user)
+    return await this.filesServies.uploadFiles(files, type, user)
   }
 
   @Post("avatar")
   @UseInterceptors(FileInterceptor("avatar"))
   async uploadAvatar(
     @CurrentUser() user: User,
-    @UploadedFile(AvatarValidationPipe) avatar: Express.Multer.File,
+    @UploadedFile(FileValidationPipe) avatar: Express.Multer.File,
   ) {
     return await this.filesServies.uploadAvatar(avatar, user)
   }
 
   @Delete()
-  async deleteFile(@Body("key") key: string) {
-    return await this.filesServies.deleteFile(key)
+  async deleteFile(@CurrentUser() user: User, @Body("key") key: string) {
+    return await this.filesServies.deleteFile(user, key)
   }
 }

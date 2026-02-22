@@ -4,17 +4,14 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { PrismaService } from "src/prisma/prisma.service"
 
 @Injectable()
 export class S3Service {
   private readonly _s3Client: S3Client
-  constructor(
-    private configService: ConfigService,
-    private prisma: PrismaService,
-  ) {
+  constructor(private configService: ConfigService) {
     this._s3Client = new S3Client({
       region: this.configService.get<string>("S3_REGION"),
       endpoint: this.configService.get<string>("S3_ENDPOINT"),
@@ -25,19 +22,20 @@ export class S3Service {
     })
   }
 
-  async download(key: string) {
-    const bucketName = this.configService.get<string>("S3_BUCKET_NAME")
+  async generatePresignedUrl(key: string, expiresIn = 3600): Promise<string> {
+    const bucketName = this.configService.get<string>(`S3_BUCKET_PRIVATE_NAME`)
     const command = new GetObjectCommand({
       Bucket: bucketName,
       Key: key,
     })
-    return await this._s3Client.send(command)
+
+    return await getSignedUrl(this._s3Client, command, { expiresIn })
   }
 
-  async upload(file: Express.Multer.File, key: string) {
+  async upload(file: Express.Multer.File, key: string, type: "PUBLIC" | "PRIVATE") {
     if (!file) throw new HttpException("Файлы не указан", HttpStatus.BAD_REQUEST)
 
-    const bucketName = this.configService.get<string>("S3_BUCKET_NAME")
+    const bucketName = this.configService.get<string>(`S3_BUCKET_${type}_NAME`)
     const endpoint = this.configService.get<string>("S3_ENDPOINT")
 
     const { buffer, mimetype } = file
@@ -56,8 +54,8 @@ export class S3Service {
     }
   }
 
-  async delete(key: string) {
-    const bucketName = this.configService.get<string>("S3_BUCKET_NAME")
+  async delete(key: string, type: "PUBLIC" | "PRIVATE") {
+    const bucketName = this.configService.get<string>(`S3_BUCKET_${type}_NAME`)
     const command = new DeleteObjectCommand({
       Bucket: bucketName,
       Key: key,

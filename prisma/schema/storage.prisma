@@ -1,18 +1,27 @@
 model File {
-  id           String   @id @default(uuid()) @db.Uuid
-  patientId    String?  @db.Uuid
-  doctorId     String?  @db.Uuid
-  clinicId     String?  @db.Uuid
+  id           String    @id @default(uuid()) @db.Uuid
+  patientId    String?   @db.Uuid
+  doctorId     String?   @db.Uuid
+  clinicId     String?   @db.Uuid
+  type         FILE_TYPE
   originalName String
   mimeType     String
   size         Int
-  s3Key        String   @unique
+  s3Key        String    @unique
   url          String
-  createdAt    DateTime @default(now())
-  patient      Patient? @relation(fields: [patientId], references: [id])
-  doctor       Doctor?  @relation(fields: [doctorId], references: [id])
-  clinic       Clinic?  @relation(fields: [clinicId], references: [id])
+  createdAt    DateTime  @default(now())
+  patient      Patient?  @relation(fields: [patientId], references: [id])
+  doctor       Doctor?   @relation(fields: [doctorId], references: [id])
+  clinic       Clinic?   @relation(fields: [clinicId], references: [id])
 
   @@map("files")
+  @@schema("storage")
+}
+
+enum FILE_TYPE {
+  DOCUMENT
+  AI_RESULT
+  OTHER
+
   @@schema("storage")
 }
