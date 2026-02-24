@@ -2,10 +2,12 @@ import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/co
 import { AppointmentService } from "./appointment.service"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { CurrentUser } from "src/common/decorators/current-user.decorator"
-import { APPOINTMENT_STATUS, User } from "@prisma/client"
+import { APPOINTMENT_STATUS, ROLE, User } from "@prisma/client"
 import { CreateAppointmentDto } from "./dto/create-appointment.dto"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { ConsentsRequiredGuard } from "src/consent/guards/consents-required.guard"
+import { RoleGuard } from "src/user/guard/role.guard"
+import { Role } from "src/user/decorator/role.decorator"
 
 @Controller("appointments")
 @UseGuards(JwtAuthGuard, ConsentsRequiredGuard)
@@ -26,6 +28,8 @@ export class AppointmentController {
   }
 
   @Post()
+  @Role(ROLE.PATIENT)
+  @UseGuards(RoleGuard)
   async createAppointment(
     @CurrentUser() user: User,
     @Body() createAppointmentDto: CreateAppointmentDto,

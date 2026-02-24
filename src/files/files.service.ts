@@ -14,9 +14,15 @@ export class FilesService {
   async getFiles(user: User, type?: FILE_TYPE) {
     const { id, role } = user
     const roleKey = ROLE_CONST[role]
-    return await this.prisma.file.findMany({
+    const files = await this.prisma.file.findMany({
       where: { [`${roleKey}Id`]: id, type },
     })
+    return Promise.all(
+      files.map(async (file) => {
+        const url = await this.s3.generatePresignedUrl(file.s3Key)
+        return { ...file, url }
+      }),
+    )
   }
 
   async uploadAvatar(file: Express.Multer.File, user: User) {
