@@ -37,6 +37,11 @@ export class UserController {
     return await this.userService.findOne({ id })
   }
 
+  @Post(":id")
+  async addUserToFavorite(@CurrentUser() user: User, @Param("id") id: string) {
+    return await this.userService.addUserToFavorite(user, id)
+  }
+
   @Post("user")
   @Type(AUTH_TYPE.STAFF)
   @UseGuards(TypeGuard)

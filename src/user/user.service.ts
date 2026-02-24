@@ -68,6 +68,30 @@ export class UserService {
     }
   }
 
+  async addUserToFavorite(user: User, favoriteId: string) {
+    const favoriteUser = await this.prisma.user.findUnique({ where: { id: favoriteId } })
+    if (!favoriteUser) {
+      throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
+    }
+
+    const roleKey = ROLE_CONST[favoriteUser.role]
+
+    const favorite = await this.prisma.favorite.findMany({
+      where: { [`${roleKey}Id`]: favoriteId },
+    })
+    if (favorite) {
+      return await this.prisma.favorite.deleteMany({
+        where: { [`${roleKey}Id`]: favoriteId },
+      })
+    }
+    return await this.prisma.favorite.create({
+      data: {
+        [`${roleKey}Id`]: { connect: { id: favoriteId } },
+        patient: { connect: { id: user.id } },
+      },
+    })
+  }
+
   async createUser(createUserDto: CreateUserDto, tx?: Prisma.TransactionClient): Promise<User> {
     const prisma = tx ?? this.prisma
     const { fullName, password, email, phone, role } = createUserDto
