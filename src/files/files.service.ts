@@ -56,13 +56,14 @@ export class FilesService {
     const folder = (type as string).toLowerCase()
 
     for (const file of files) {
+      const decodedName = Buffer.from(file.originalname, "latin1").toString("utf8")
       const key = this._generateKey(id, folder, file.originalname)
       const s3Data = await this.s3.upload(file, key, "PRIVATE")
 
       try {
         const dbFile = await prisma.file.create({
           data: {
-            originalName: file.originalname,
+            originalName: decodedName,
             mimeType: file.mimetype,
             type: type,
             s3Key: s3Data.key,
