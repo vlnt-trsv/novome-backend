@@ -8,8 +8,6 @@ import { Type } from "src/auth/decorators/type.decorator"
 import { UpdateConsentDto } from "./dto/update-consent.dto"
 
 @Controller("consents")
-@Type(AUTH_TYPE.STAFF)
-@UseGuards(JwtAuthGuard, TypeGuard)
 export class ConsentController {
   constructor(private consentService: ConsentService) {}
 
@@ -19,16 +17,22 @@ export class ConsentController {
   }
 
   @Post()
+  @Type(AUTH_TYPE.STAFF)
+  @UseGuards(JwtAuthGuard, TypeGuard)
   async createConsent(@Body() createConsentDto: CreateConsentDto): Promise<Consent> {
     return await this.consentService.createConsent(createConsentDto)
   }
 
   @Post(":id")
+  @Type(AUTH_TYPE.STAFF)
+  @UseGuards(JwtAuthGuard, TypeGuard)
   async publishConsent(@Param("id") id: string): Promise<Consent> {
     return await this.consentService.publishConsent(id)
   }
 
   @Patch(":id")
+  @Type(AUTH_TYPE.STAFF)
+  @UseGuards(JwtAuthGuard, TypeGuard)
   async editConsent(
     @Param("id") id: string,
     @Body() updateConsentDto: UpdateConsentDto,

@@ -18,7 +18,7 @@ export class ProfileController {
   async createProfile(
     @CurrentUser() user: User,
     @Body() createProfileDto: CreateProfileDto,
-    @UploadedFiles(FilesValidationPipe) files: Express.Multer.File[],
+    @UploadedFiles(FilesValidationPipe) files: Express.Multer.File[] = [],
   ): Promise<Patient | Doctor | Clinic> {
     return await this.profileService.createProfile(user, createProfileDto, files)
   }

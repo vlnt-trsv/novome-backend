@@ -1,7 +1,33 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsString, Length, Matches } from "class-validator"
+import { IsOptional, IsString, IsUrl, Length, Matches } from "class-validator"
 
 export class ClinicDto {
+  @ApiProperty({ example: "Медика Плюс", description: "Торговое название (Бренд)" })
+  @IsString()
+  brandName: string
+
+  @ApiProperty({ example: "Москва", description: "Город" })
+  @IsString()
+  city: string
+
+  @ApiProperty({
+    example: "https://clinic-site.ru",
+    description: "Веб-сайт",
+    required: false,
+  })
+  @IsOptional()
+  @IsUrl({}, { message: "Некорректный формат ссылки" })
+  website?: string
+
+  @ApiProperty({
+    example: "Сеть многопрофильных клиник...",
+    description: "Описание клиники",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  description?: string
+
   @ApiProperty({ example: "ООО Клиника", description: "Юридическое название" })
   @IsString()
   legalName: string
