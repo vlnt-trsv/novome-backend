@@ -69,6 +69,7 @@ export class CatalogService {
       include: {
         user: {
           select: {
+            id: true,
             avatar: true,
             clinic: true,
             email: true,
@@ -94,6 +95,7 @@ export class CatalogService {
       include: {
         user: {
           select: {
+            id: true,
             avatar: true,
             clinic: true,
             email: true,

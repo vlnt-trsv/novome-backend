@@ -68,14 +68,15 @@ model Consent {
 }
 
 model UserConsent {
-    id        String   @id @default(uuid()) @db.Uuid
-    userId    String   @db.Uuid
-    consentId String   @db.Uuid
+    id        String    @id @default(uuid()) @db.Uuid
+    userId    String    @db.Uuid
+    consentId String    @db.Uuid
     ipAddress String?
     userAgent String?
-    signedAt  DateTime @default(now())
-    user      User     @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    consent   Consent? @relation(fields: [consentId], references: [id])
+    signedAt  DateTime  @default(now())
+    revokedAt DateTime?
+    user      User      @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    consent   Consent?  @relation(fields: [consentId], references: [id])
 
     @@map("user_consents")
     @@schema("moderation")
