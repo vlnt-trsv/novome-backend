@@ -23,11 +23,9 @@ export class UserService {
       include: {
         auth: { omit: { hashedPassword: true, hashedRt: true } },
         patient: { include: { favorites: user?.role === ROLE.PATIENT } },
-        doctor: user?.role === ROLE.DOCTOR,
+        doctor: { include: { schedules: user?.role === ROLE.DOCTOR } },
         clinic: user?.role === ROLE.CLINIC,
-        tickets: true,
         userConsents: true,
-        notifications: true,
       },
     })
   }

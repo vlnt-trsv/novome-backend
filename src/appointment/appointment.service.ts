@@ -10,13 +10,22 @@ export class AppointmentService {
 
   async getAppointments(user: User) {
     const { id, role } = user
-    return await this.prisma.appointment.findMany({ where: { [`${ROLE_CONST[role]}Id`]: id } })
+    return await this.prisma.appointment.findMany({
+      where: { [`${ROLE_CONST[role]}Id`]: id },
+      include: {
+        timeSlot: true,
+        doctor: { include: { user: true } },
+        clinic: true,
+        patient: { include: { user: true } },
+      },
+    })
   }
 
   async getAppointment(user: User, appointmentId: string) {
     const { id, role } = user
     return await this.prisma.appointment.findUnique({
       where: { [`${ROLE_CONST[role]}Id`]: id, id: appointmentId },
+      include: { timeSlot: true },
     })
   }
 
@@ -62,29 +71,25 @@ export class AppointmentService {
 
   async updateAppointmentStatus(user: User, id: string, status: APPOINTMENT_STATUS) {
     const { id: userId } = user
-    if (status === APPOINTMENT_STATUS.PENDING || APPOINTMENT_STATUS.CONFIRMED) {
+    console.log(userId, id)
+    if (status === APPOINTMENT_STATUS.PENDING || status === APPOINTMENT_STATUS.CONFIRMED) {
       return await this.prisma.appointment.update({
         where: {
           id: id,
           OR: [{ patientId: userId }, { doctorId: userId }],
         },
-        data: {
-          status,
-        },
-        include: {
-          timeSlot: true,
-        },
+        data: { status },
+        include: { timeSlot: true },
       })
     }
+
     return await this.prisma.$transaction(async (tx) => {
       const appointment = await tx.appointment.update({
         where: {
           id: id,
           OR: [{ patientId: userId }, { doctorId: userId }],
         },
-        data: {
-          status,
-        },
+        data: { status },
       })
       await tx.timeSlot.update({
         where: { id: appointment.timeSlotId },
