@@ -1,9 +1,11 @@
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common"
+import { BadRequestException, HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common"
 import { Cron, CronExpression } from "@nestjs/schedule"
-import { Prisma, SLOT_STATUS } from "@prisma/client"
+import { Break, Prisma, SLOT_STATUS, WorkRule } from "@prisma/client"
 import { addMinutes, hoursToMinutes } from "date-fns"
 import { ROLE_CONST } from "src/common/constants/user.constants"
 import { PrismaService } from "src/prisma/prisma.service"
+import { CreateWorkRuleDto } from "./dto/create-work-rule.dto"
+import { CreateBreakDto } from "./dto/create-break.dto"
 
 @Injectable()
 export class ScheduleService {
@@ -25,8 +27,45 @@ export class ScheduleService {
       return await tx.schedule.findMany({
         where: {
           OR: [{ doctorId: targetId }, { clinicId: targetId }],
+          isAvailable: true,
         },
       })
+    })
+  }
+
+  async createWorkRule(userId: string, createWorkRuleDto: CreateWorkRuleDto): Promise<WorkRule> {
+    const { type, startTime, endTime } = createWorkRuleDto
+    return await this.prisma.workRule.create({
+      data: {
+        doctor: { connect: { id: userId } },
+        type,
+        startTime,
+        endTime,
+      },
+    })
+  }
+
+  async createBreak(userId: string, createBreakDto: CreateBreakDto): Promise<Break> {
+    const { type, startAt, endAt } = createBreakDto
+
+    if (new Date(startAt) >= new Date(endAt)) {
+      throw new BadRequestException("Дата окончания должна быть позже даты начала")
+    }
+
+    return await this.prisma.break.create({
+      data: {
+        doctor: { connect: { id: userId } },
+        type,
+        startAt,
+        endAt,
+      },
+    })
+  }
+
+  async updateSchedule(userId: string, id: string, isAvailable: boolean) {
+    return await this.prisma.schedule.update({
+      where: { id, doctorId: userId },
+      data: { isAvailable },
     })
   }
 

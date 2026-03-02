@@ -14,6 +14,7 @@ export class RelationshipsService {
         archive: null,
         status: { not: "ARCHIVED" },
       },
+      include: { doctor: { include: { user: true } }, clinic: { include: { user: true } } },
     })
   }
 

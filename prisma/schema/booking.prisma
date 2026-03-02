@@ -24,6 +24,7 @@ model Schedule {
     id           String  @id @default(uuid()) @db.Uuid
     doctorId     String? @db.Uuid
     clinicId     String? @db.Uuid
+    isAvailable  Boolean @default(true)
     dayOfWeek    Int
     startAt      String
     endAt        String

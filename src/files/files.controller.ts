@@ -24,7 +24,7 @@ export class FilesController {
   constructor(private filesServies: FilesService) {}
 
   @Get()
-  async getFile(@CurrentUser() user: User) {
+  async getFiles(@CurrentUser() user: User) {
     return await this.filesServies.getFiles(user)
   }
 

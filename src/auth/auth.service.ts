@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
+import { BadRequestException, HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import { Auth, Prisma, User } from "@prisma/client"
 import { PrismaService } from "src/prisma/prisma.service"
 import { LoginDto } from "./dto/login.dto"
@@ -25,7 +25,7 @@ export class AuthService {
     private consentService: ConsentService,
   ) {}
 
-  async confirmEmail(email: string, token: string): Promise<HttpException> {
+  async confirmEmail(email: string, token: string) {
     const auth = await this.prisma.auth.findUnique({ where: { email } })
     if (!auth) {
       throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
@@ -37,7 +37,7 @@ export class AuthService {
       throw new HttpException("Срок действия токена истек", HttpStatus.BAD_REQUEST)
     }
 
-    await this.prisma.auth.update({
+    const updatedAuth = await this.prisma.auth.update({
       where: { email },
       data: {
         confirmationToken: null,
@@ -45,10 +45,18 @@ export class AuthService {
         confirmationSentAt: null,
         confirmed: true,
         emailConfirmedAt: new Date(),
+        lastSignInAt: new Date(),
       },
     })
 
-    throw new HttpException("Почта успешно подтверждена", HttpStatus.OK)
+    const { accessToken, refreshToken } = this._createTokens(updatedAuth)
+    await this._updateRefreshTokenHash(updatedAuth.id, refreshToken)
+
+    return {
+      email: updatedAuth.email,
+      accessToken,
+      refreshToken,
+    }
   }
 
   async sendConfirmationEmail(user: User, tx?: Prisma.TransactionClient) {
@@ -86,8 +94,13 @@ export class AuthService {
       },
     })
 
-    await this.emailService.sendConfirmationEmail(email, confirmationToken)
+    try {
+      await this.emailService.sendConfirmationEmail(email, confirmationToken)
+    } catch (error) {
+      throw new BadRequestException("Письмо не отправлено, попробуйте позже", { cause: error })
+    }
     return {
+      confirmationToken,
       confirmationSentAt: updatedAuth.confirmationSentAt,
       confirmationTokenExpiresAt: updatedAuth.confirmationTokenExpiresAt,
     }

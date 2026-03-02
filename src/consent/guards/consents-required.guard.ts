@@ -21,14 +21,12 @@ export class ConsentsRequiredGuard implements CanActivate {
 
     const activeRequiredConsents = await this.prisma.consent.findMany({
       where: { isRequired: true },
-      select: { id: true },
     })
 
     if (activeRequiredConsents.length === 0) return true
 
     const signedConsents = await this.prisma.userConsent.findMany({
       where: { userId },
-      select: { consentId: true },
     })
 
     const signedIds = signedConsents.map((sc) => sc.consentId)
@@ -39,7 +37,7 @@ export class ConsentsRequiredGuard implements CanActivate {
       throw new ForbiddenException({
         message: "Необходимо принять обновленные условия использования",
         error: "CONSENTS_REQUIRED",
-        missingConsentIds: missingConsents.map((c) => c.id),
+        missingConsentIds: missingConsents,
       })
     }
 

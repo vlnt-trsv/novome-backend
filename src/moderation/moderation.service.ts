@@ -16,7 +16,7 @@ export class ModerationService {
   constructor(private prisma: PrismaService) {}
 
   async getTickets(): Promise<Ticket[]> {
-    return await this.prisma.ticket.findMany()
+    return await this.prisma.ticket.findMany({ include: { messages: true } })
   }
 
   async getReviews(): Promise<Review[]> {
@@ -38,9 +38,11 @@ export class ModerationService {
       return await tx.ticketMessage.create({
         data: {
           senderId: staffId,
+          type: "STAFF",
           text,
           ticket: { connect: { id: ticket?.id } },
         },
+        include: { ticket: true },
       })
     })
   }

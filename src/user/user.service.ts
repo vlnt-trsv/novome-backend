@@ -22,12 +22,10 @@ export class UserService {
       where,
       include: {
         auth: { omit: { hashedPassword: true, hashedRt: true } },
-        patient: user?.role === ROLE.PATIENT,
-        doctor: user?.role === ROLE.DOCTOR,
+        patient: { include: { favorites: user?.role === ROLE.PATIENT } },
+        doctor: { include: { schedules: user?.role === ROLE.DOCTOR } },
         clinic: user?.role === ROLE.CLINIC,
-        tickets: true,
         userConsents: true,
-        notifications: true,
       },
     })
   }
@@ -65,6 +63,37 @@ export class UserService {
       total,
       page: Math.floor(skip / take) + 1,
       limit: take,
+    }
+  }
+
+  async addUserToFavorite(user: User, favoriteId: string) {
+    const favoriteUser = await this.prisma.user.findUnique({
+      where: { id: favoriteId },
+      include: { patient: true, doctor: true, clinic: true },
+    })
+    if (!favoriteUser) {
+      throw new HttpException("Пользователь не найден", HttpStatus.NOT_FOUND)
+    }
+
+    const roleKey = ROLE_CONST[favoriteUser.role]
+
+    const existingFavorite = await this.prisma.favorite.findFirst({
+      where: { userId: user.id, [`${roleKey}Id`]: favoriteId },
+    })
+
+    if (existingFavorite) {
+      await this.prisma.favorite.delete({
+        where: { id: existingFavorite.id },
+      })
+      return { added: false }
+    } else {
+      await this.prisma.favorite.create({
+        data: {
+          [`${roleKey}Id`]: favoriteId,
+          userId: user.id,
+        },
+      })
+      return { added: true }
     }
   }
 
