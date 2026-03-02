@@ -1,15 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-  SetMetadata,
-  UseGuards,
-} from "@nestjs/common"
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common"
 import { UserService } from "./user.service"
 import { AUTH_TYPE, User } from "@prisma/client"
 import { CreateUserDto } from "./dto/create-user.dto"
@@ -46,6 +35,11 @@ export class UserController {
   @Get(":id")
   async getUser(@Param("id") id: string): Promise<User | null> {
     return await this.userService.findOne({ id })
+  }
+
+  @Post(":id")
+  async addUserToFavorite(@CurrentUser() user: User, @Param("id") id: string) {
+    return await this.userService.addUserToFavorite(user, id)
   }
 
   @Post("user")

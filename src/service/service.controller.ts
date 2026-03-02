@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common"
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common"
 import { ServiceService } from "./service.service"
 import { ROLE, Service, User } from "@prisma/client"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
@@ -37,7 +37,7 @@ export class ServiceController {
     return await this.serviceService.updateService(id, updateServiceDto)
   }
 
-  @Delete(":id")
+  @Post(":id")
   async archiveService(@Param("id") id: string, @Body() archiveServiceDto: ArchiveServiceDto) {
     return await this.serviceService.archiveService(id, archiveServiceDto)
   }

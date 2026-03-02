@@ -35,8 +35,19 @@ export class AuthController {
   async confirm(
     @Query("email") email: string,
     @Query("token") token: string,
-  ): Promise<HttpException> {
-    return await this.authService.confirmEmail(email, token)
+    @Res() res: Response,
+  ) {
+    const result = await this.authService.confirmEmail(email, token)
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: true, // В продакшене true
+      sameSite: "lax",
+      maxAge: 1 * 24 * 60 * 60 * 1000,
+    })
+
+    const redirectUrl = `${process.env.CLIENT_URL}/create-profile?accessToken=${result.accessToken}`
+    return res.redirect(redirectUrl)
   }
 
   @Post("send-confirm")
@@ -81,7 +92,6 @@ export class AuthController {
     return await this.authService.logout(user.id)
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post("refresh")
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken: string = req.cookies["refreshToken"]

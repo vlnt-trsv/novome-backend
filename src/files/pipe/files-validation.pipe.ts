@@ -11,8 +11,8 @@ export class FilesValidationPipe implements PipeTransform {
     const typeRegex = new RegExp(allowedTypes)
 
     if (!files || files.length === 0) {
-      console.log(files)
-      throw new HttpException("Файлы не найдены", HttpStatus.NOT_FOUND)
+      // throw new HttpException("Файлы не найдены", HttpStatus.NOT_FOUND)
+      return []
     }
 
     for (const file of files) {

@@ -62,8 +62,46 @@ export class ConsentService {
     const prisma = tx ?? this.prisma
     const ipAddress = req.ip
     const userAgent = req.headers["user-agent"]
+    await prisma.userConsent.deleteMany({
+      where: {
+        userId,
+        consentId: { in: consentIds },
+      },
+    })
+
     return await prisma.userConsent.createMany({
       data: consentIds.map((id) => ({ consentId: id, userId, ipAddress, userAgent })),
+      skipDuplicates: true,
+    })
+  }
+
+  async revokeConsent(id: string, userId: string) {
+    const activeConsent = await this.prisma.userConsent.findFirst({
+      where: {
+        consentId: id,
+        userId,
+        revokedAt: null,
+      },
+    })
+
+    if (!activeConsent) {
+      throw new HttpException("Активное согласие для отзыва не найдено", HttpStatus.NOT_FOUND)
+    }
+
+    const consentInfo = await this.prisma.consent.findUnique({
+      where: { id },
+    })
+
+    if (consentInfo?.isRequired) {
+      throw new HttpException(
+        "Данное согласие является обязательным и не может быть отозвано",
+        HttpStatus.FORBIDDEN,
+      )
+    }
+
+    return await this.prisma.userConsent.update({
+      where: { id: activeConsent.id },
+      data: { revokedAt: new Date() },
     })
   }
 }

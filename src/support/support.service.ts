@@ -9,7 +9,10 @@ export class SupportService {
   constructor(private prisma: PrismaService) {}
 
   async getTickets(userId: string): Promise<Ticket[]> {
-    return await this.prisma.ticket.findMany({ where: { userId } })
+    return await this.prisma.ticket.findMany({
+      where: { userId },
+      include: { messages: true },
+    })
   }
 
   async getTicket(userId: string, id: string): Promise<Ticket> {
@@ -29,6 +32,7 @@ export class SupportService {
           create: {
             text,
             senderId: userId,
+            type: "USER",
           },
         },
       },
@@ -49,9 +53,11 @@ export class SupportService {
       return await tx.ticketMessage.create({
         data: {
           senderId: userId,
+          type: "USER",
           text,
           ticket: { connect: { id: ticket?.id } },
         },
+        include: { ticket: true },
       })
     })
   }

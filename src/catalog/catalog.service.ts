@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common"
+import { BadRequestException, Injectable } from "@nestjs/common"
 import { Clinic, Doctor, Prisma, ROLE, SPECIALIZATION } from "@prisma/client"
 import { PrismaService } from "src/prisma/prisma.service"
 
@@ -52,6 +52,7 @@ export class CatalogService {
         take,
       )
     }
+    throw new BadRequestException("Роль должна быть либо DOCTOR, либо CLINIC")
   }
 
   private async _getDoctors(
@@ -68,6 +69,7 @@ export class CatalogService {
       include: {
         user: {
           select: {
+            id: true,
             avatar: true,
             clinic: true,
             email: true,
@@ -93,6 +95,7 @@ export class CatalogService {
       include: {
         user: {
           select: {
+            id: true,
             avatar: true,
             clinic: true,
             email: true,

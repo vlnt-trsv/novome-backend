@@ -32,15 +32,19 @@ export class DoctorDto {
   @IsString()
   license: string
 
+  @ApiProperty({ example: "Биография" })
+  @IsString()
+  bio?: string
+
   @ApiProperty({
     example: "RHINOPLASTY",
     description: "Специализация",
     enum: SPECIALIZATION,
     isArray: true,
   })
-  // @IsArray()
-  // @IsEnum(SPECIALIZATION, { each: true })
-  // @Type(() => String)
+  @IsArray()
+  @IsEnum(SPECIALIZATION, { each: true })
+  @Type(() => String)
   specializations: SPECIALIZATION[]
 
   @ApiProperty({ example: 5, description: "Опыт работы (лет)" })
