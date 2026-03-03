@@ -7,6 +7,7 @@ import { CreateWorkRuleDto } from "./dto/create-work-rule.dto"
 import { Role } from "src/user/decorator/role.decorator"
 import { RoleGuard } from "src/user/guard/role.guard"
 import { CreateBreakDto } from "./dto/create-break.dto"
+import { UpdateScheduleDto } from "./dto/update-schedule.dto"
 
 @Controller("schedules")
 @UseGuards(JwtAuthGuard)
@@ -44,8 +45,8 @@ export class ScheduleController {
   async updateSchedule(
     @CurrentUser() user: User,
     @Param("id") id: string,
-    @Param("isAvailable") isAvailable: boolean,
+    @Body() updateScheduleDto: UpdateScheduleDto,
   ) {
-    return await this.scheduleService.updateSchedule(user.id, id, isAvailable)
+    return await this.scheduleService.updateSchedule(user.id, id, updateScheduleDto)
   }
 }

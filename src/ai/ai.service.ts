@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common"
-import { User } from "@prisma/client"
+import { File, User } from "@prisma/client"
 import { FilesService } from "src/files/files.service"
 import { VisualizeAiDto } from "./dto/visualize-ai.dto"
 import { PrismaService } from "src/prisma/prisma.service"
@@ -20,7 +20,7 @@ export class AiService {
     this.ROUTER_AI_MODEL = this.configService.get<string>("ROUTER_AI_MODEL")!
   }
 
-  async history(user: User) {
+  async history(user: User): Promise<File[]> {
     return await this.fileService.getFiles(user, "AI_RESULT")
   }
 
