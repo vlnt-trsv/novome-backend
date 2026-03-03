@@ -10,19 +10,19 @@ import {
 } from "@nestjs/common"
 import { AiService } from "./ai.service"
 import { CurrentUser } from "src/common/decorators/current-user.decorator"
-import { User } from "@prisma/client"
+import { File, User } from "@prisma/client"
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard"
 import { VisualizeAiDto } from "./dto/visualize-ai.dto"
 import { FileValidationPipe } from "src/files/pipe/file-validation.pipe"
 import { FileInterceptor } from "@nestjs/platform-express"
 
-@Controller("ai")
+@Controller("ai-visualization")
 @UseGuards(JwtAuthGuard)
 export class AiController {
   constructor(private aiService: AiService) {}
 
   @Get()
-  async history(@CurrentUser() user: User) {
+  async history(@CurrentUser() user: User): Promise<File[]> {
     return await this.aiService.history(user)
   }
 

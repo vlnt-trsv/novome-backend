@@ -6,6 +6,7 @@ import { ROLE_CONST } from "src/common/constants/user.constants"
 import { PrismaService } from "src/prisma/prisma.service"
 import { CreateWorkRuleDto } from "./dto/create-work-rule.dto"
 import { CreateBreakDto } from "./dto/create-break.dto"
+import { UpdateScheduleDto } from "./dto/update-schedule.dto"
 
 @Injectable()
 export class ScheduleService {
@@ -62,10 +63,16 @@ export class ScheduleService {
     })
   }
 
-  async updateSchedule(userId: string, id: string, isAvailable: boolean) {
+  async updateSchedule(userId: string, id: string, updateScheduleDto: UpdateScheduleDto) {
+    const { isAvailable, startAt, endAt, slotDuration } = updateScheduleDto
     return await this.prisma.schedule.update({
       where: { id, doctorId: userId },
-      data: { isAvailable },
+      data: {
+        isAvailable,
+        startAt,
+        endAt,
+        slotDuration,
+      },
     })
   }
 
