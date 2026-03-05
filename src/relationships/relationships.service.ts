@@ -12,7 +12,7 @@ export class RelationshipsService {
       where: {
         OR: [{ doctorId: userId }, { clinicId: userId }],
         archive: null,
-        status: { not: "ARCHIVED" },
+        status: { equals: "APPROVED" },
       },
       include: { doctor: { include: { user: true } }, clinic: { include: { user: true } } },
     })
