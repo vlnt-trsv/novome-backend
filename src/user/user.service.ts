@@ -23,7 +23,7 @@ export class UserService {
       include: {
         auth: { omit: { hashedPassword: true, hashedRt: true } },
         patient: { include: { favorites: user?.role === ROLE.PATIENT } },
-        doctor: { include: { schedules: user?.role === ROLE.DOCTOR } },
+        doctor: { include: { schedules: { orderBy: { dayOfWeek: "asc" } } } },
         clinic: user?.role === ROLE.CLINIC,
         userConsents: true,
       },
